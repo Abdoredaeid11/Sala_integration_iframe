@@ -36,7 +36,7 @@
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    @if (auth()->check())
+                    @if (auth()->check() && request()->is('dashboard/*'))
                         <!-- Right Side Of Navbar -->
                         <ul class="navbar-nav ms-auto">
                             <li class="nav-item dropdown">
@@ -64,7 +64,7 @@
                         </ul>
                     @endif
 
-                    @if (!auth()->check())
+                    @if (request()->is('settings/*') || request()->is('shipping/*'))
                         <!-- Right Side Of Navbar -->
                         <ul class="navbar-nav ms-auto">
                             <li class="nav-item dropdown">

@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use GuzzleHttp\Client;
 use App\Models\Setting;
 use App\Models\OauthToken;
+use GuzzleHttp\Psr7\Request as Psr7Request;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class SettingController extends Controller
 {
+
     public function index(Request $request)
     {
         $domains = User::where('username', '<>', 'admin')->get()->pluck('domain')->toArray();
@@ -30,13 +33,13 @@ class SettingController extends Controller
 
         $data = json_decode($request->data);
 
-        $setting = new Setting();
+        $setting = Setting::where('merchant', $data->merchant)->first() ?? new Setting();
 
         $setting->forceFill([
-            'user_id' => User::where('domain', $request->url)->first()->id,
-            'expired' => false,
-            'merchant' => $data->merchant,
-            'domain' => $request->url,
+            'user_id' => $setting->user_id ?? User::where('domain', $request->url)->first()->id,
+            'expired' => $setting->expired ?? false,
+            'merchant' => $setting->merchant ?? $data->merchant,
+            'domain' => $setting->domain ?? $request->url,
         ])->save();
 
         $oauthToken = OauthToken::where('merchant', $data->merchant)->first() ?? new OauthToken();
@@ -48,6 +51,10 @@ class SettingController extends Controller
             'expires_in' => $data->expires_in,
             'refresh_token' => $data->refresh_token,
         ])->save();
+
+        session()->put('setting', $setting->id);
+
+        $this->subscribe($setting);
 
         return redirect(route('dashboard', ['setting' => $setting->id]));
     }
@@ -81,5 +88,24 @@ class SettingController extends Controller
         ])->save();
 
         return redirect(route('dashboard', ['setting' => $setting->id]));
+    }
+
+    public function subscribe(Setting $setting)
+    {
+        $client = new Client();
+        $headers = [
+            'User-Agent' => 'Apidog/1.0.0 (https://apidog.com)',
+            'Content-Type' => 'application/json',
+            "Authorization" => "Bearer " . $setting->token->access_token,
+        ];
+        $body = json_encode([
+            'name'  => 'webhook subscribe',
+            'url'   => config('services.salla.redirect') . '/webhooks',
+            'event' => 'order.shipment.creating',
+            'version' => 2
+        ]);
+
+        $request = new Psr7Request('POST', 'https://api.salla.dev/admin/v2/webhooks/subscribe', $headers, $body);
+        @$res = $client->sendAsync($request)->wait();
     }
 }

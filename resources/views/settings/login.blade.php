@@ -54,7 +54,8 @@
 </div>
 
 <script>
+    const settingId = `{{ session('setting') }}`;
     const hiddenInput = document.querySelector('#setting');
-    hiddenInput.setAttribute('value', localStorage.getItem('setting'));
+    hiddenInput.setAttribute('value', settingId ?? localStorage.getItem('setting'));
 </script>
 @endsection

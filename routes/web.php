@@ -22,26 +22,22 @@ Route::get('/', function() {
 Route::get('/oauth/redirect', [OAuthController::class, 'redirect'])->name('oauth.redirect');
 Route::get('/oauth/callback', [OAuthController::class, 'callback'])->name('oauth.callback');
 
-// Webhook Subscription
-Route::get('/webhook/subscribe', [WebhookController::class, 'subscribe'])->middleware('auth')->name('webhook.subscribe');
 // Save Token
 
-// Route::group(['middleware' => 'salla.auth'], function() {
-    Route::get('/settings/token', [SettingController::class, 'index'])->name('settings.token');
-    Route::post('/settings/token/save', [SettingController::class, 'tokenSettingsSave'])->name('settings.token.save');
-    Route::get('/dashboard/shipping/{setting}', DashboardController::class)->name('dashboard');
-    Route::get('/settings', [SettingController::class, 'settingIndex'])->name('settings');
-    Route::post('/settings/save', [SettingController::class, 'save'])->name('settings.save');
+Route::get('/settings/token', [SettingController::class, 'index'])->name('settings.token');
+Route::post('/settings/token/save', [SettingController::class, 'tokenSettingsSave'])->name('settings.token.save');
+Route::get('/shipping/{setting}', DashboardController::class)->name('dashboard');
+Route::get('/settings', [SettingController::class, 'settingIndex'])->name('settings');
+Route::post('/settings/save', [SettingController::class, 'save'])->name('settings.save');
 
-    Route::get('/settings/login', [LoginController::class, 'loginForm'])->name('shipping.login');
-    Route::post('/settings/login', [LoginController::class, 'login'])->name('settings.login');
+Route::get('/settings/login', [LoginController::class, 'loginForm'])->name('shipping.login');
+Route::post('/settings/login', [LoginController::class, 'login'])->name('settings.login');
 
-    // Get Service and Zone and subzones
-    Route::get('/services/{setting}', ServiceController::class);
-    Route::get('/zones/get/{serviceId}/{setting}/{parent?}', [ZoneController::class, 'getZones']);
+// Get Service and Zone and subzones
+Route::get('/services/{setting}', ServiceController::class);
+Route::get('/zones/get/{serviceId}/{setting}/{parent?}', [ZoneController::class, 'getZones']);
 
-    Route::post('shipments/store', [ShipmentController::class, 'store'])->name('shipment.store');
-// });
+Route::post('shipments/store', [ShipmentController::class, 'store'])->name('shipment.store');
 
 
 

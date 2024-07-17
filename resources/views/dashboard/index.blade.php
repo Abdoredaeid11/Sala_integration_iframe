@@ -113,8 +113,8 @@
         let idsInput = document.getElementById('ids');
         const ids = new Set(...btn.getAttribute('data-ids'));
 
-        const settingId = {{ $setting?->id }};
-        const accurateToken = `{{ $setting?->accurate_token }}`
+        const settingId = {{ $setting->id }};
+        const accurateToken = `{{ $setting->accurate_token }}`
         localStorage.setItem('setting', settingId);
         localStorage.setItem('accurate_token', accurateToken);
 
@@ -134,6 +134,6 @@
 
 
         let hiddenInput = document.querySelector('#setting');
-        hiddenInput.setAttribute('value', localStorage.getItem('setting'));
+        hiddenInput?.setAttribute('value', localStorage.getItem('setting'));
     </script>
 @endsection

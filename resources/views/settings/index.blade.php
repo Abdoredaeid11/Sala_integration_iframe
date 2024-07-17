@@ -36,16 +36,15 @@
         </div>
 
     <script>
-        // window.addEventListener('load', e => {
-
-        // })
 
         const hiddenInput = document.querySelector('#setting');
         hiddenInput.setAttribute('value', localStorage.getItem('setting'));
+        const serviceBaseUrl = "{{ url('services') }}";
+        const zonesBaseUrl = "{{ url('zones/get/') }}";
         let serviceSelect = document.getElementById('service');
         let getServiceReq = new XMLHttpRequest();
         const settingId = localStorage.getItem('setting');
-        getServiceReq.open('GET', `http://127.0.0.1:8000/services/${settingId}`,true);
+        getServiceReq.open('GET', `${serviceBaseUrl}/${settingId}`,true);
         getServiceReq.send();
         getServiceReq.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
@@ -66,7 +65,7 @@
                     let serviceId = e.target.value
                     if(serviceId != "null"){
                         let serviceRequest = new XMLHttpRequest();
-                        serviceRequest.open('GET', `http://127.0.0.1:8000/zones/get/${serviceId}/${settingId}`,true);
+                        serviceRequest.open('GET', `${zonesBaseUrl}/${serviceId}/${settingId}`,true);
                         serviceRequest.send();
                         serviceRequest.onreadystatechange = function() {
                             if (this.readyState == 4 && this.status == 200) {
@@ -84,7 +83,7 @@
                                     let zoneId = e.target.value
                                     if(zoneId != "null"){
                                         let zoneRequest = new XMLHttpRequest();
-                                        zoneRequest.open('GET', `http://127.0.0.1:8000/zones/get/${serviceId}/${settingId}/${zoneId}`, true)
+                                        zoneRequest.open('GET', `${zonesBaseUrl}/${serviceId}/${settingId}/${zoneId}`, true)
                                         zoneRequest.send();
                                         zoneRequest.onreadystatechange = function() {
                                             if (this.readyState == 4 && this.status == 200) {

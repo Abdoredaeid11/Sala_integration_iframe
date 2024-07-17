@@ -15,7 +15,7 @@ class CreateOauthTokensTable extends Migration
     {
         Schema::create('oauth_tokens', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('setting_id')->nullable()->constrained();
+            $table->foreignId('setting_id')->nullable()->constrained()->cascadeOnDelete();
             $table->bigInteger('merchant')->unique();
             $table->text('access_token');
             $table->bigInteger('expires_in');
