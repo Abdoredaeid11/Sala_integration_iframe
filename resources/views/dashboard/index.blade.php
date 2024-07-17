@@ -30,7 +30,7 @@
                 <div class="col-12">
                     @include('includes.errors')
                     <button type="button" class="btn btn-primary mb-2 add-ship" data-ids = "" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                        Add Shipment
+                        Send Shipment
                     </button>
                     @include('includes.add_shipment')
                     <div class="card">

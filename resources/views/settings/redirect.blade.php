@@ -17,4 +17,7 @@
         window.location.replace(`{{ route('clients') }}`);
     </script>
 @endif
+    <script>
+        window.location.replace(`{{ route('oauth.redirect') }}`);
+    </script>
 @endsection

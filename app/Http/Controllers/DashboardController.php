@@ -22,6 +22,7 @@ use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Province;
 use App\Models\Setting;
+use Exception;
 
 class DashboardController extends Controller
 {
@@ -51,8 +52,6 @@ class DashboardController extends Controller
         if(is_null($setting->accurate_token)) {
             return redirect(route('shipping.login'));
         }
-        // ddd($settingId);
-        // $setting = Setting::where('merchant', session('merchant'))->first();
         $this->updateAllShipments($setting);
         $this->updateStatus($setting);
 
@@ -79,7 +78,6 @@ class DashboardController extends Controller
             'setting' => $setting,
             'shipments' => @$shipments ?? [],
             'store'     => $store,
-            // 'zones' => $zones,
         ]);
     }
 
@@ -112,85 +110,64 @@ class DashboardController extends Controller
                         DropDownField::CODE,
                     ])
                 ]);
-                $status = @$response->original['data']['shipment']['status'];
-                if(isset($status) && ! is_null($status)){
-                    if($status !== $shipment->status){
-                        $shipment->update([
-                            'status' => $status['name'],
-                        ]);
-                        $slug = "";
-                        if($status['code'] == "PKR"){
-                            $slug = "under_review";
+                try {
+                    $status = @$response->original['data']['shipment']['status'];
+                    if(isset($status) && ! is_null($status)){
+                        if($status !== $shipment->status){
+                            $shipment->update([
+                                'status' => $status['name'],
+                            ]);
+                            $slug = "";
+                            if($status['code'] == "PKR"){
+                                $slug = "under_review";
+                            }
+                            if($status['code'] == "PKM" || $status['code'] == 'PRP' || $status['code'] == "RITS"){
+                                $slug = "in_progress";
+                            }
+                            if($status['code'] == "PKD"){
+                                $slug = "completed";
+                            }
+                            if($status['code'] == "OTD" || $status['code'] == "HTR"){
+                                $slug = "delivering";
+                            }
+                            if($status['code'] == "DTR"){
+                                $slug = "delivered";
+                            }
+                            if($status['code'] == "PRPD"){
+                                $slug = "shipped";
+                            }
+                            if($status['code'] == "RJCT" || $status['code'] == "DEX"){
+                                $slug = "canceled";
+                            }
+                            if($status['code'] == "RTRN" || $status['code'] == "RTS"){
+                                $slug = "restored";
+                            }
+                            if($status['code'] == "OTR"){
+                                $slug = "restoring";
+                            }
+                            $client = new GuzzleClient();
+                            $headers = [
+                                'User-Agent' => 'Apidog/1.0.0 (https://apidog.com)',
+                                'Authorization' => "Bearer " . $setting->token->access_token,
+                                'Content-Type' => 'application/json'
+                            ];
+                            $body = json_encode([ 'slug' => $slug ]);
+                            $request = new Request('POST', 'https://api.salla.dev/admin/v2/orders/' . $shipment->order_id . '/status', $headers, $body);
+                            try {
+                                $res = $client->sendAsync($request)->wait();
+                            } catch (Exception $e) {
+                                info(json_encode($e->getMessage()));
+                                return back();
+                            }
                         }
-                        if($status['code'] == "PKM"){
-                            $slug = "in_progress";
-                        }
-                        if($status['code'] == "PKD"){
-                            $slug = "completed";
-                        }
-                        if($status['code'] == "OTD"){
-                            $slug = "delivering";
-                        }
-                        if($status['code'] == "DTR"){
-                            $slug = "delivered";
-                        }
-                        if($status['code'] == "RITS" || $status['code'] == "PRPD"){
-                            $slug = "shipped";
-                        }
-                        if($status['code'] == "RJCT"){
-                            $slug = "canceled";
-                        }
-                        if($status['code'] == "RTRN"){
-                            $slug = "restored";
-                        }
-                        if($status['code'] == "OTR"){
-                            $slug = "restoring";
-                        }
-                        $client = new GuzzleClient();
-                        $headers = [
-                            'User-Agent' => 'Apidog/1.0.0 (https://apidog.com)',
-                            'Authorization' => "Bearer " . $setting->token->access_token,
-                            'Content-Type' => 'application/json'
-                        ];
-                        $body = json_encode([ 'slug' => $slug ]);
-                        $request = new Request('POST', 'https://api.salla.dev/admin/v2/orders/' . $shipment->order_id . '/status', $headers, $body);
-                        $res = $client->sendAsync($request)->wait();
                     }
+                } catch(Exception $e) {
+                    info(json_encode($e->getMessage()));
+                    return back();
                 }
             }
         }
     }
-
-    // public function saveZones(HttpRequest $request)
-    // {
-    //     $request->validate([
-    //         'zones' => 'json|required',
-    //         'page'  => 'numeric|required|max:60',
-    //     ]);
-    //     $zones = json_decode($request->zones);
-    //     foreach($zones as $zone){
-    //         $this->saveEachZone($zone);
-    //     }
-    //     return redirect(url('/dashboard/mapping?page=' . $request->page + 1));
-    // }
-
-    // public function saveEachZone($args)
-    // {
-    //     $zone = Zone::where('integration_zone_id', $args->integrationZoneId)->first() ?? new Zone();
-
-    //     $zone->forceFill([
-    //         'integration_zone_id'   => $args->integrationZoneId,
-    //         'integration_zone_name' => $args->integrationZoneName,
-    //         'zone_id'               => $args->zoneId,
-    //         'sub_zone_id'           => $args->subZoneId,
-    //     ])->save();
-
-    //     collect(auth()->user()->shipments->where('city_id', $zone->integration_zone_id)->all())->each(function($shipment) use($zone) {
-    //         $shipment->update([
-    //             'zone_id' => $zone->id,
-    //         ]);
-    //     });
-    // }
 
 
     // Administrative Operations

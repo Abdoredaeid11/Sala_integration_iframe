@@ -11,11 +11,11 @@
                     <div class="modal-body">
                         <input type="hidden" id = "ids" name="ids" value = "">
                         <input type="hidden" id = "setting" name="setting">
-                        <p class="lead">Sync shipments in accurate?</p>
+                        <p class="lead">Send shipments to shipping system?</p>
                     </div>
                 </form>
                 <div class="modal-footer">
-                    <button form="add_ship" type="submit" class="btn btn-primary">Save</button>
+                    <button form="add_ship" type="submit" class="btn btn-primary">Approve</button>
                 </div>
             @else
                 <div class="row">

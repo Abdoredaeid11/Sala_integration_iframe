@@ -23,9 +23,7 @@
     <div id="app">
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">
-                <a class="nav-link navbar-brand"
-                    @if(auth()->check()) href="{{ (auth()->check() && auth()->user()->is_admin) ? url('dashboard/clients') : url('dashboard/mappedZones/'. auth()->id()) }}" @endif
-                    \>
+                <a class="nav-link navbar-brand" href="#" \>
                     <img src="{{ asset('images/logo.png') }}" width="200" class="d-inline-block align-top"
                         alt="">
                 </a>
@@ -51,7 +49,7 @@
                                     </a>
                                     <a class="dropdown-item" href="{{ route('logout') }}"
                                         onclick="event.preventDefault();
-                                                     document.getElementById('logout-form').submit();">
+                                                    document.getElementById('logout-form').submit();">
                                         {{ __('Logout') }}
                                     </a>
 

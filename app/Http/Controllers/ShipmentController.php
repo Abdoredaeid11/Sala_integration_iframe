@@ -197,6 +197,7 @@ class ShipmentController extends Controller
             $shipment->forceFill([
                 'zone_id' => @$zoneId,
             ])->save();
+            $shipment->refresh();
         }
 
         if(!is_null($shipment->zone)){
