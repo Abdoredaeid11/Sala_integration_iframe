@@ -10,6 +10,10 @@ cd /app
 echo "Running database migrations..."
 php artisan migrate --force
 
+# Install MySQL client
+apk update
+apk add mysql-client
+
 echo "Starting nginx server..."
 openrc
 touch /run/openrc/softlevel
