@@ -22,6 +22,9 @@ class EnsureSallaSession
     {
         $sessionId = $request->cookie('salla_session');
 
+        if (!$sessionId)
+            return redirect(route('oauth.redirect'));
+
         $session = Session::find(app('encrypter')->decrypt($sessionId));
 
         if (!$session || $session->expires_at->isPast()) {
