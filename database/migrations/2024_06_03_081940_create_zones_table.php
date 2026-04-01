@@ -14,8 +14,8 @@ return new class extends Migration
     {
         Schema::create('zones', function (Blueprint $table) {
             $table->id();
-            $table->integer('zone_id'); # accurate zone
-            $table->integer('subzone_id'); # accurate subzone
+            $table->integer('zone_id')->nullable(); # accurate zone
+            $table->integer('subzone_id')->nullable(); # accurate subzone
             $table->integer('mapped_zone_id'); # Salla Zone
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
         });

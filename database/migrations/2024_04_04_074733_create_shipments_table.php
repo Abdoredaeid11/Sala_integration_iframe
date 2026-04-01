@@ -13,18 +13,13 @@ return new class extends Migration
     {
         Schema::create('shipments', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('order_id')->unique();
-            $table->string('shipment_id')->nullable();
-            $table->string('code')->nullable();
-            $table->string('tracking_url')->nullable();
-            $table->float('weight');
-            $table->string('status')->nullable();
-            $table->integer('total');
-            $table->string('address');
-            $table->string('name');
-            $table->string('phone');
-            $table->foreignId('setting_id')->nullable()->constrained()->cascadeOnDelete();
-            $table->string('merchant');
+            $table->integer('shipment_id');
+            $table->string('status');
+            $table->string('delivered_at')->nullable();
+            $table->string('tracking');
+            $table->string('shipping_fees');
+            $table->string('order_id');
+            $table->string('session_id');
             $table->timestamps();
         });
     }

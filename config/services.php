@@ -31,6 +31,7 @@ return [
     ],
 
     'salla' => [
+        'api_url'            => "https://api.salla.dev/admin/v2",
         'client_id'          => env('SALLA_OAUTH_CLIENT_ID'),
         'client_secret'      => env('SALLA_OAUTH_CLIENT_SECRET'),
         'redirect'           => env('SALLA_OAUTH_CLIENT_REDIRECT_URI'),

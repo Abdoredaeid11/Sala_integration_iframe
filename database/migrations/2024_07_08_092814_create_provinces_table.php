@@ -15,8 +15,9 @@ return new class extends Migration
         Schema::create('provinces', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Country::class);
-            $table->string('name');
-            $table->string('code');
+            $table->string('name_en');
+            $table->string('name_ar');
+            $table->string('external_id');
         });
     }
 

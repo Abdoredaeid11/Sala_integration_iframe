@@ -2,15 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Province extends Model
-{
-    public $timestamps = false;
-
-    function country()
-    {
-        return $this->belongsTo(Country::class);
-    }
-}
+class Province extends Model {}

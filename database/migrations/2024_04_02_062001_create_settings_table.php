@@ -14,13 +14,14 @@ return new class extends Migration
     {
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
-            $table->text('accurate_token')->nullable();
-            $table->string('merchant');
+            $table->text('token');
+            $table->string('session_id');
             $table->boolean('expired')->default(false);
-            $table->integer('from_zone_id')->nullable();
-            $table->integer('from_sub_zone_id')->nullable();
             $table->integer('service_id')->nullable();
-            $table->foreignIdFor(User::class)->nullable()->constrained()->cascadeOnDelete();
+            $table->integer('from_zone_id')->nullable();
+            $table->integer('from_subzone_id')->nullable();
+            $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
+            $table->enum('openable_code', ['Y', 'N'])->default('N');
             $table->timestamps();
         });
     }

@@ -2,30 +2,29 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @method static Builder forCurrentShop() @param int $sessionId
+ */
 class Setting extends Model
 {
-    use HasFactory;
-
     public $casts = [
         'expired' => 'boolean'
     ];
 
-    public function token()
-    {
-        return $this->hasOne(OauthToken::class);
-    }
+    const OPENABLE_CODE = [
+        'Y' => 'Y',
+        'N' => 'N',
+    ];
 
     function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function shipments(): ?HasMany
+    function scopeForCurrentShop($query, $sessionId)
     {
-        return $this->hasMany(Shipment::class);
+        $query->where('session_id', $sessionId);
     }
 }

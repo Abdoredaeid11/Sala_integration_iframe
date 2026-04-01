@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CheckRole
 {
@@ -16,7 +17,11 @@ class CheckRole
      */
     public function handle(Request $request, Closure $next)
     {
-        if (!auth()->user()->is_admin) {
+        if (!Auth::check()) {
+            return redirect(route('login'));
+        }
+
+        if (Auth::user()->username != 'admin') {
             abort(403, 'You do not have permission to access this resource.');
         }
 

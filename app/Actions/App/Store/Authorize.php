@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Actions\App;
+namespace App\Actions\App\Store;
 
 use App\Actions\BaseAction;
+use App\Models\Session;
 
 /**
  * @property string merchant example "1234509876"
@@ -14,5 +15,22 @@ class Authorize extends BaseAction
 {
     public function handle()
     {
+        // $session = Session::where('merchant', $this->merchant)->first() ?? new Session();
+
+        // info(json_encode([
+        //     'session' => $session,
+        //     'data' => $this->data,
+        //     'merchant' => $this->merchant,
+        //     'access_token' => $this->data['access_token'],
+        //     'refresh_token' => $this->data['refresh_token'],
+        //     'expires_at' => $this->data['expires'],
+        // ]));
+
+        // $session->forceFill([
+        //     'merchant'   => $this->merchant,
+        //     'access_token'  => $this->data['access_token'],
+        //     'refresh_token' => $this->data['refresh_token'],
+        //     'expires_at'    => $this->data['expires'],
+        // ])->save();
     }
 }

@@ -28,7 +28,7 @@ class MakeActionCommand extends GeneratorCommand
 
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\Actions\\'.$this->component;
+        return $rootNamespace . '\Actions\\' . $this->component;
     }
 
     /**
@@ -72,7 +72,7 @@ class MakeActionCommand extends GeneratorCommand
     {
         $event = explode('.', $this->getNameInput());
         $component = $event[0];
-        $action = Str::camel(Str::replace('.', '_', Str::after($this->getNameInput(), $component.'.')));
+        $action = Str::camel(Str::replace('.', '_', Str::after($this->getNameInput(), $component . '.')));
 
         $this->event = $this->getNameInput();
         $this->component = ucfirst($component);

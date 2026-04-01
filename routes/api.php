@@ -1,7 +1,6 @@
 <?php
 
-use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\Salla\WebhookController;
 use Illuminate\Support\Facades\Route;
 
-// Salla webhook
 Route::post('/webhooks', WebhookController::class)->name('webhook');

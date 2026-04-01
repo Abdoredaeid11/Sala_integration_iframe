@@ -13,8 +13,12 @@ class WebhookRequest extends FormRequest
      */
     public function authorize()
     {
-        return true;
-        // return $this->header('Authorization') === config('services.salla.webhook_secret');
+        $secret = config('services.salla.webhook_secret');
+        $requestHMAC = $this->header('x-salla-signature');
+        $requestBody = $this->getContent();
+        $computedHMAC = hash_hmac('sha256', $requestBody, $secret);
+
+        return hash_equals($requestHMAC, $computedHMAC);
     }
 
     public function rules()

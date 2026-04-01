@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Setting;
 use App\Models\User;
 
 return [

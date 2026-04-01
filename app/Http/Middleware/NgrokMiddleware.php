@@ -37,7 +37,7 @@ class NgrokMiddleware
 
         $urlGenerator = app()->make('url');
         $urlGenerator->forceScheme($scheme);
-        $urlGenerator->forceRootUrl($scheme.'://'.$host);
+        $urlGenerator->forceRootUrl($scheme . '://' . $host);
 
         Paginator::currentPathResolver(function () use ($urlGenerator, $request) {
             return $urlGenerator->to($request->path());

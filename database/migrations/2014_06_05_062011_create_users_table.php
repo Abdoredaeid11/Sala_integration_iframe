@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Country;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -17,7 +18,7 @@ return new class extends Migration
             $table->string('username')->unique();
             $table->string('password');
             $table->string('domain');
-            $table->string('country_code');
+            $table->foreignIdFor(Country::class)->constrained();
             $table->boolean('active')->default(true);
             $table->timestamps();
         });

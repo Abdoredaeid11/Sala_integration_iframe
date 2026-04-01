@@ -38,11 +38,10 @@ class ServeRemoteCommand extends Command
             return 1;
         }
 
-        $port = $this->option('port') ? : '8000';
+        $port = $this->option('port') ?: '8000';
 
         $command = ['ngrok', 'http', '--log', 'stdout'];
         $command[] = $port;
-
 
         $webhook_url = route('webhook', [], false);
         $callback_url = route('oauth.callback', [], false);
@@ -51,12 +50,9 @@ class ServeRemoteCommand extends Command
         $process->setOptions(['create_new_console' => true]);
         $process->start();
         $process->waitUntil(function ($type, $data) use ($webhook_url, $callback_url, $process) {
-//            if (preg_match('/msg="starting web service".*? addr=(?<addr>\S+)/', $data, $matches)) {
-//                $this->line('<fg=green>Ngrok Web Interface: </fg=green>'.'http://'.$matches['addr']);
-//            }
 
             if (preg_match('/msg="started tunnel".*? addr=(?<addr>\S+)/', $data, $matches)) {
-                $this->line('<fg=green>Local App URL: </fg=green>'.$matches['addr']);
+                $this->line('<fg=green>Local App URL: </fg=green>' . $matches['addr']);
             }
 
             if (preg_match_all('/msg="started tunnel".*? url=(?<url>\S+)/m', $data, $matches)) {
@@ -65,27 +61,26 @@ class ServeRemoteCommand extends Command
                 $webhook_urls = collect($matches['url'])->filter(function ($url) {
                     return Str::startsWith($url, 'https');
                 })->map(function ($url) use ($webhook_url) {
-                    return $url.$webhook_url;
+                    return $url . $webhook_url;
                 })->implode(', ');
-                $this->line('<fg=green>Webhook URL: </fg=green>'.$webhook_urls);
+                $this->line('<fg=green>Webhook URL: </fg=green>' . $webhook_urls);
                 $this->newLine(1);
 
                 if (!app(SallaAuthService::class)->isEasyMode()) {
-
                     $this->newLine(1);
                     $this->comment("Please go to \"Salla Partners Portal\" and copy the following \"OAuth Callback URL\" \nto the Callback URL field in the \"App Details -> Applications Keys\" section:");
                     $callback_urls = collect($matches['url'])->filter(function ($url) {
                         return Str::startsWith($url, 'https');
                     })->map(function ($url) use ($callback_url) {
-                        return $url.$callback_url;
+                        return $url . $callback_url;
                     })->implode(', ');
-                    $this->line('<fg=green>OAuth Callback URL: </fg=green>'.$callback_urls);
+                    $this->line('<fg=green>OAuth Callback URL: </fg=green>' . $callback_urls);
                     $this->newLine(1);
                 }
 
-
+                info(json_encode($matches));
                 $this->line('🎉 Now you can open your broswer to view your App at ');
-                $this->line('<fg=green>Remote App URL: </fg=green>'.$matches['url'][1] ?? $matches['url'][0]);
+                $this->line('<fg=green>Remote App URL: </fg=green>' . $matches['url'][0] ?? $matches['url'][1]);
                 $this->comment('As always, happy hacking! 🙌');
             }
 
@@ -93,7 +88,7 @@ class ServeRemoteCommand extends Command
             if ($process::OUT === $type) {
                 $this->line($data, null, 'vv');
             } else {
-                $this->warn("Failed start ngrok :- ".$data);
+                $this->warn("Failed start ngrok :- " . $data);
             }
 
             return Str::contains($data, 'started tunnel');

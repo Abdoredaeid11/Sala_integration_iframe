@@ -2,13 +2,13 @@
 
 namespace App\Services;
 
-use App\Models\OauthToken;
-use App\Models\Setting;
+use App\Models\Session;
+use Illuminate\Support\Carbon;
+use Salla\OAuth2\Client\Provider\Salla;
+use League\OAuth2\Client\Token\AccessToken;
+use Salla\OAuth2\Client\Provider\SallaUser;
 use Illuminate\Support\Traits\ForwardsCalls;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
-use League\OAuth2\Client\Token\AccessToken;
-use Salla\OAuth2\Client\Provider\Salla;
-use Salla\OAuth2\Client\Provider\SallaUser;
 
 /**
  * @mixin Salla
@@ -23,29 +23,29 @@ class SallaAuthService
     protected $provider;
 
     /**
-     * @var OauthToken
+     * @var Session
      */
-    public $token;
+    public $session;
 
     public function __construct()
     {
         $this->provider = new Salla([
             'clientId'     => config('services.salla.client_id'), // The client ID assigned to you by Salla
             'clientSecret' => config('services.salla.client_secret'), // The client password assigned to you by Salla
-            'redirectUri'  => $this->isEasyMode() ? null : route('oauth.callback'), // the url for current page in your service
+            'redirectUri'  => $this->isEasyMode() ? null : config('services.salla.redirect'), // the url for current page in your service
         ]);
     }
 
     /**
-     * Get the token from the Setting model.
+     * Get the token from the Session model.
      *
-     * @param  Setting  $setting
+     * @param  Session $session
      *
      * @return $this
      */
-    public function forUser(Setting $setting)
+    public function forUser(Session $session)
     {
-        $this->token = $setting->token;
+        $this->session = $session;
 
         return $this;
     }
@@ -85,7 +85,7 @@ class SallaAuthService
      */
     public function getStoreDetail()
     {
-        return $this->provider->getResourceOwner(new AccessToken($this->token->toArray()));
+        return $this->provider->getResourceOwner(new AccessToken($this->session->toArray()));
     }
 
     /**
@@ -96,21 +96,21 @@ class SallaAuthService
      */
     public function getNewAccessToken()
     {
-        if ($this->token->hasExpired()) {
-            return new AccessToken($this->token->toArray());
+        if ($this->session->expires_at->isPast()) {
+            return new AccessToken($this->session->toArray());
         }
 
         // let's request a new access token via refresh token.
         $token = $this->provider->getAccessToken('refresh_token', [
-            'refresh_token' => $this->token->refresh_token
+            'refresh_token' => $this->session->refresh_token
         ]);
 
         // lets update user tokens
-        $this->token->update([
+        $this->session->forceFill([
             'access_token'  => $token->getToken(),
-            'expires_in'    => $token->getExpires(),
+            'expires_at'    => Carbon::createFromTimestamp($token->getExpires())->toDateTimeString(),
             'refresh_token' => $token->getRefreshToken()
-        ]);
+        ])->save();
 
         return $token;
     }
@@ -121,7 +121,7 @@ class SallaAuthService
         // If the token expired, lets request a new one and save it to the database
         $this->getNewAccessToken();
 
-        return $this->provider->fetchResource($method, $url, $this->token->access_token, $options);
+        return $this->provider->fetchResource($method, $url, $this->session->access_token, $options);
     }
 
     /**
@@ -135,6 +135,7 @@ class SallaAuthService
      */
     public function __call($name, $arguments)
     {
+        info(json_encode(['provider' => $this->provider, 'name' => $name, 'arguments' => $arguments]));
         return $this->forwardCallTo($this->provider, $name, $arguments);
     }
 
@@ -156,6 +157,6 @@ class SallaAuthService
      */
     public function getResourceOwner(?AccessToken $token)
     {
-        return $this->provider->getResourceOwner($token ?: new AccessToken($this->token->toArray()));
+        return $this->provider->getResourceOwner($token ?: new AccessToken($this->session->toArray()));
     }
 }
