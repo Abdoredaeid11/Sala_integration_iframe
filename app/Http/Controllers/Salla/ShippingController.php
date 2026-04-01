@@ -198,7 +198,13 @@ class ShippingController extends Controller
 
     private function getPhone($shipment)
     {
-        return $shipment['shipping']['phone'];
+        $phone = $shipment['shipping']['phone'];
+
+        if (!str_starts_with($phone, '+')) {
+            $phone = '+' . $phone;
+        }
+
+        return $phone;
     }
 
     // description
