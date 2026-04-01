@@ -308,7 +308,6 @@
                     subzones: [],
                     tags: []
                 },
-
                 orders: [],
                 selectedOrders: [],
                 allSelectedOrders: new Set(),
