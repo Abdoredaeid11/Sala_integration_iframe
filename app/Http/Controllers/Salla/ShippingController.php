@@ -336,7 +336,7 @@ class ShippingController extends Controller
         $response = (new ShipmentService())->saveShipment(
             input: new InputsShipment(
                 weight: $order['shipping']['total_weight'] / 1000,
-                price: $order['total']['amount'],
+                price: $order['is_pending_payment'] ? $order['total']['amount'] : 0,
 
                 recipientPhone: $this->getPhone($order),
                 recipientMobile: $this->getPhone($order),
