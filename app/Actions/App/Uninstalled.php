@@ -4,8 +4,6 @@ namespace App\Actions\App;
 
 use App\Actions\BaseAction;
 use App\Models\Session;
-use App\Models\Setting;
-use Illuminate\Support\Facades\Cookie;
 
 /**
  * @property string merchant example "1234509876"
@@ -17,8 +15,6 @@ class Uninstalled extends BaseAction
 {
     public function handle()
     {
-        Setting::where('merchant', $this->merchant)->delete();
-        Session::where('merchant', $this->merchant)->delete();
-        Cookie::forget('salla_session');
+        Session::where('merchant', $this->merchant)?->delete();
     }
 }
