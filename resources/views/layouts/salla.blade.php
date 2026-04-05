@@ -931,6 +931,7 @@
                                     address_line: order.salla_shipment?.ship_to.address_line ?? null,
                                     items: order.salla_shipment?.packages ?? null,
                                     total_weight: order.salla_shipment?.total_weight.value ?? null,
+                                    weight_unit: order.salla_shipment?.total_weight.units ?? null,
                                 }
                             } else {
                                 return null;

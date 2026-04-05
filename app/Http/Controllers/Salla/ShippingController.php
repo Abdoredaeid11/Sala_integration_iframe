@@ -297,6 +297,7 @@ class ShippingController extends Controller
                 'address_line' => $data['orders'][$key]['address_line'],
                 'items' => $data['orders'][$key]['items'],
                 'total_weight' => $data['orders'][$key]['total_weight'],
+                'weight_unit' => $data['orders'][$key]['weight_unit'],
             ];
 
             if ($validation = $this->validateOrder($order)) {
@@ -335,7 +336,7 @@ class ShippingController extends Controller
         /** @var mixed */
         $response = (new ShipmentService())->saveShipment(
             input: new InputsShipment(
-                weight: $order['shipping']['total_weight'] / 1000,
+                weight: $this->getWeight($order['shipping']['total_weight'], $order['shipping']['weight_unit']),
                 price: $order['is_pending_payment'] ? $order['total']['amount'] : 0,
 
                 recipientPhone: $this->getPhone($order),
@@ -430,6 +431,26 @@ class ShippingController extends Controller
         }
 
         return true;
+    }
+
+    private function getWeight($weight, $unit)
+    {
+        $unit = strtolower($unit);
+
+        if (in_array($unit, ['gram', 'g', 'gm'])) {
+            return (float)$weight * 0.001;
+        }
+
+        if (in_array($unit, ['pound', 'lb'])) {
+            return (float)$weight * 0.453592;
+        }
+
+        if (in_array($unit, ['ounce', 'oz'])) {
+            return (float)$weight * 0.0283495;
+        }
+
+        // default is kilogram or kg
+        return (float)$weight;
     }
 
     // sync shipment

@@ -70,7 +70,7 @@ class ZoneController extends Controller
         $mappedZones = MappedZone::where('user_id', $user->id)->get();
 
         $client = $user;
-        return view('admin.client.mapping-zones', compact('provinces', 'provincesPaginator', 'accurateZones', 'mappedZones', 'userId', 'client', 'perPage'));
+        return view('admin.client.mapping-zones', compact('provinces', 'provincesPaginator', 'accurateZones', 'mappedZones', 'userId', 'client', 'perPage', 'page'));
     }
 
     public function mappedZonesBulkSave(Request $request, $userId = null)

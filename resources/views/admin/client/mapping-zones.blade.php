@@ -60,8 +60,9 @@
                     </div>
                     <div class="col-lg-2 col-md-4">
                         <select class="form-select border-0 bg-light" id="perPageSelect">
-                            @foreach([10, 25, 50, 100] as $option)
-                                <option value="{{ $option }}" {{ $perPage == $option ? 'selected' : '' }}>{{ $option }} per page</option>
+                            @foreach ([10, 25, 50, 100] as $option)
+                                <option value="{{ $option }}" {{ $perPage == $option ? 'selected' : '' }}>
+                                    {{ $option }} per page</option>
                             @endforeach
                         </select>
                     </div>
@@ -72,7 +73,9 @@
                     </div>
                     <div class="col-lg-2 col-md-12">
                         <div class="text-muted small text-lg-end">
-                            Showing <strong>{{ $provincesPaginator->firstItem() ?? 0 }}</strong>–<strong>{{ $provincesPaginator->lastItem() ?? 0 }}</strong> of <strong>{{ $provincesPaginator->total() }}</strong>
+                            Showing
+                            <strong>{{ $provincesPaginator->firstItem() ?? 0 }}</strong>–<strong>{{ $provincesPaginator->lastItem() ?? 0 }}</strong>
+                            of <strong>{{ $provincesPaginator->total() }}</strong>
                         </div>
                     </div>
                 </div>
@@ -196,65 +199,73 @@
             </div>
 
             <!-- Pagination Controls -->
-            @if($provincesPaginator->lastPage() > 1)
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body py-2">
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-                        <div class="text-muted small">
-                            Page <strong>{{ $provincesPaginator->currentPage() }}</strong> of <strong>{{ $provincesPaginator->lastPage() }}</strong>
+            @if ($provincesPaginator->lastPage() > 1)
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body py-2">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                            <div class="text-muted small">
+                                Page <strong>{{ $provincesPaginator->currentPage() }}</strong> of
+                                <strong>{{ $provincesPaginator->lastPage() }}</strong>
+                            </div>
+                            <nav aria-label="Zone mapping pagination">
+                                <ul class="pagination pagination-sm mb-0">
+                                    {{-- Previous --}}
+                                    <li class="page-item {{ $provincesPaginator->onFirstPage() ? 'disabled' : '' }}">
+                                        <a class="page-link"
+                                            href="{{ $provincesPaginator->appends(['per_page' => $perPage])->previousPageUrl() }}"
+                                            aria-label="Previous">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </a>
+                                    </li>
+
+                                    {{-- Page Numbers --}}
+                                    @php
+                                        $current = $provincesPaginator->currentPage();
+                                        $last = $provincesPaginator->lastPage();
+                                        $start = max(1, $current - 2);
+                                        $end = min($last, $current + 2);
+                                    @endphp
+
+                                    @if ($start > 1)
+                                        <li class="page-item">
+                                            <a class="page-link"
+                                                href="{{ $provincesPaginator->appends(['per_page' => $perPage])->url(1) }}">1</a>
+                                        </li>
+                                        @if ($start > 2)
+                                            <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                                        @endif
+                                    @endif
+
+                                    @for ($i = $start; $i <= $end; $i++)
+                                        <li class="page-item {{ $i === $current ? 'active' : '' }}">
+                                            <a class="page-link"
+                                                href="{{ $provincesPaginator->appends(['per_page' => $perPage])->url($i) }}">{{ $i }}</a>
+                                        </li>
+                                    @endfor
+
+                                    @if ($end < $last)
+                                        @if ($end < $last - 1)
+                                            <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                                        @endif
+                                        <li class="page-item">
+                                            <a class="page-link"
+                                                href="{{ $provincesPaginator->appends(['per_page' => $perPage])->url($last) }}">{{ $last }}</a>
+                                        </li>
+                                    @endif
+
+                                    {{-- Next --}}
+                                    <li class="page-item {{ $provincesPaginator->hasMorePages() ? '' : 'disabled' }}">
+                                        <a class="page-link"
+                                            href="{{ $provincesPaginator->appends(['per_page' => $perPage])->nextPageUrl() }}"
+                                            aria-label="Next">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
                         </div>
-                        <nav aria-label="Zone mapping pagination">
-                            <ul class="pagination pagination-sm mb-0">
-                                {{-- Previous --}}
-                                <li class="page-item {{ $provincesPaginator->onFirstPage() ? 'disabled' : '' }}">
-                                    <a class="page-link" href="{{ $provincesPaginator->appends(['per_page' => $perPage])->previousPageUrl() }}" aria-label="Previous">
-                                        <i class="fas fa-chevron-left"></i>
-                                    </a>
-                                </li>
-
-                                {{-- Page Numbers --}}
-                                @php
-                                    $current = $provincesPaginator->currentPage();
-                                    $last = $provincesPaginator->lastPage();
-                                    $start = max(1, $current - 2);
-                                    $end = min($last, $current + 2);
-                                @endphp
-
-                                @if($start > 1)
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ $provincesPaginator->appends(['per_page' => $perPage])->url(1) }}">1</a>
-                                    </li>
-                                    @if($start > 2)
-                                        <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
-                                    @endif
-                                @endif
-
-                                @for($i = $start; $i <= $end; $i++)
-                                    <li class="page-item {{ $i === $current ? 'active' : '' }}">
-                                        <a class="page-link" href="{{ $provincesPaginator->appends(['per_page' => $perPage])->url($i) }}">{{ $i }}</a>
-                                    </li>
-                                @endfor
-
-                                @if($end < $last)
-                                    @if($end < $last - 1)
-                                        <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
-                                    @endif
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ $provincesPaginator->appends(['per_page' => $perPage])->url($last) }}">{{ $last }}</a>
-                                    </li>
-                                @endif
-
-                                {{-- Next --}}
-                                <li class="page-item {{ $provincesPaginator->hasMorePages() ? '' : 'disabled' }}">
-                                    <a class="page-link" href="{{ $provincesPaginator->appends(['per_page' => $perPage])->nextPageUrl() }}" aria-label="Next">
-                                        <i class="fas fa-chevron-right"></i>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
                     </div>
                 </div>
-            </div>
             @endif
 
             <!-- Empty State -->
@@ -582,8 +593,10 @@
                 $('#perPageSelect').on('change', (e) => {
                     this.navigateWithCheck(() => {
                         const url = new URL(window.location.href);
+                        const lastPage = Math.ceil({{ $provincesPaginator->total() }} / e.target.value);
+                        const page = {{ $page }};
                         url.searchParams.set('per_page', e.target.value);
-                        url.searchParams.set('page', 1);
+                        url.searchParams.set('page', page > lastPage ? lastPage : page);
                         window.location.href = url.toString();
                     });
                 });
