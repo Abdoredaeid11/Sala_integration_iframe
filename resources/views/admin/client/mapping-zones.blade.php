@@ -139,7 +139,7 @@
                                             name="{{ $province['id'] }}_accurateZones"
                                             id="{{ $province['id'] }}_accurateZones"
                                             data-province-id="{{ $province['id'] }}" data-bs-toggle="tooltip"
-                                            title="Select a zone for this shopify zone">
+                                            title="Select a zone for this Salla zone">
                                             <option value=""></option>
                                             @foreach ($accurateZones as $accurateZone)
                                                 <option value="{{ $accurateZone['id'] }}"
@@ -271,7 +271,7 @@
             <!-- Empty State -->
             <div id="emptyState" class="text-center py-5 d-none">
                 <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">No Shopify zones found</h5>
+                <h5 class="text-muted">No Salla zones found</h5>
                 <p class="text-muted">Try adjusting your search criteria</p>
             </div>
         </form>
@@ -289,7 +289,7 @@
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label class="form-label"> for All Unmapped Shopify zones</label>
+                            <label class="form-label"> for All Unmapped Salla zones</label>
                             <select class="form-select" id="bulkZoneSelect">
                                 <option value="">Select Accurate Zone</option>
                                 @foreach ($accurateZones as $zone)
@@ -299,7 +299,7 @@
                         </div>
                         <div class="alert alert-info border-0">
                             <i class="fas fa-info-circle me-2"></i>
-                            This will assign the selected zone to all currently unmapped shopify zones.
+                            This will assign the selected zone to all currently unmapped Salla zones.
                         </div>
                     </div>
                     <div class="modal-footer border-0">
