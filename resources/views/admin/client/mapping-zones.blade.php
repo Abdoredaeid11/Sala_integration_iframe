@@ -520,6 +520,7 @@
                 this.totalCount = {{ $provincesPaginator->total() }};
                 this.pageCount = {{ count($provinces['data']) }};
                 this.hasChanges = false;
+                this.subzoneCache = {};
                 this.init();
             }
 
@@ -593,7 +594,8 @@
                 $('#perPageSelect').on('change', (e) => {
                     this.navigateWithCheck(() => {
                         const url = new URL(window.location.href);
-                        const lastPage = Math.ceil({{ $provincesPaginator->total() }} / e.target.value);
+                        const lastPage = Math.ceil({{ $provincesPaginator->total() }} / e.target
+                        .value);
                         const page = {{ $page }};
                         url.searchParams.set('per_page', e.target.value);
                         url.searchParams.set('page', page > lastPage ? lastPage : page);
@@ -742,14 +744,27 @@
                 $loading.removeClass('d-none');
 
                 try {
-                    const finalUrl = this.baseUrlTemplate.replace('ZONE_ID_PLACEHOLDER', zoneId);
-                    const response = await fetch(finalUrl);
+                    let subzones;
 
-                    if (!response.ok) {
-                        throw new Error(`API call failed! Status: ${response.status}. URL: ${response.url}`);
+                    if (this.subzoneCache[zoneId]) {
+                        subzones = await this.subzoneCache[zoneId];
+                    } else {
+                        const finalUrl = this.baseUrlTemplate.replace('ZONE_ID_PLACEHOLDER', zoneId);
+
+                        this.subzoneCache[zoneId] = fetch(finalUrl).then(response => {
+                            if (!response.ok) {
+                                throw new Error(
+                                    `API call failed! Status: ${response.status}. URL: ${response.url}`);
+                            }
+                            return response.json();
+                        }).catch(error => {
+                            delete this.subzoneCache[zoneId];
+                            throw error;
+                        });
+
+                        subzones = await this.subzoneCache[zoneId];
                     }
 
-                    const subzones = await response.json();
                     $loading.addClass('d-none');
 
                     if (subzones.length === 0) {
