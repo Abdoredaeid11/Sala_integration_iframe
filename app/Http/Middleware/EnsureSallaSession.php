@@ -41,7 +41,7 @@ class EnsureSallaSession
     private function initializeShippingClient(Session $session): void
     {
         try {
-            $setting = Setting::where('session_id', $session->id)->first();
+            $setting = Setting::where('merchant', $session->merchant)->first();
 
             if ($setting && $setting->user) {
                 Client::init(

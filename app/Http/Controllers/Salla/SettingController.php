@@ -35,7 +35,7 @@ class SettingController extends Controller
                 return response()->json(['setting' => null]);
             }
 
-            $setting = Setting::where('session_id', $session->id)->first();
+            $setting = Setting::where('merchant', $session->merchant)->first();
 
             return response()->json(['setting' => $setting]);
         } catch (\Exception $e) {
@@ -147,7 +147,7 @@ class SettingController extends Controller
                 ], 401);
             }
 
-            $existingSetting = Setting::where('session_id', $session->id)->first();
+            $existingSetting = Setting::where('merchant', $session->merchant)->first();
             $setting = $existingSetting ?? new Setting();
 
             // Check if credentials changed - if so, reset operation fields
@@ -159,7 +159,7 @@ class SettingController extends Controller
                 'user_id' => $validated['user_id'],
                 'token' => $validated['token'],
                 'expired' => false,
-                'session_id' => $session->id,
+                'merchant' => $session->merchant,
             ];
 
             // Reset operation fields if credentials changed
@@ -221,7 +221,7 @@ class SettingController extends Controller
                 'openable_code' => ['required', 'in:Y,N'],
             ]);
 
-            $setting = Setting::where('session_id', $session->id)->first();
+            $setting = Setting::where('merchant', $session->merchant)->first();
 
             if (!$setting || !$setting->user_id || !$setting->token) {
                 return response()->json([
@@ -326,7 +326,7 @@ class SettingController extends Controller
                 'message' => 'Settings saved successfully!',
                 'setting' => $setting,
                 'debug' => [
-                    'session_id' => $session->getId(),
+                    'merchant' => $session->merchant,
                     'saved' => true,
                     'setting_id' => $setting->id
                 ]
@@ -364,7 +364,7 @@ class SettingController extends Controller
             if (!$userId || !$token) {
                 // Fallback to session-based approach for backward compatibility
                 $session = $request->get('sallaSession');
-                $setting = Setting::where('session_id', $session->id)->first();
+                $setting = Setting::where('merchant', $session->merchant)->first();
 
                 if (!$setting || !$setting->user_id || !$setting->token) {
                     return response()->json([]);
@@ -415,7 +415,7 @@ class SettingController extends Controller
             if (!$userId || !$token) {
                 // Fallback to session-based approach for backward compatibility
                 $session = $request->get('sallaSession');
-                $setting = Setting::where('session_id', $session->id)->first();
+                $setting = Setting::where('merchant', $session->merchant)->first();
 
                 if (!$setting || !$setting->token || !$setting->user_id) {
                     return response()->json([]);

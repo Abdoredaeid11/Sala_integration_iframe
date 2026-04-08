@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @method static Builder forCurrentShop() @param int $sessionId
+ * @method static Builder forCurrentShop() @param int $merchant
  */
 class Setting extends Model
 {
@@ -23,8 +23,8 @@ class Setting extends Model
         return $this->belongsTo(User::class);
     }
 
-    function scopeForCurrentShop($query, $sessionId)
+    function scopeForCurrentShop($query, $merchant)
     {
-        $query->where('session_id', $sessionId);
+        $query->where('merchant', $merchant);
     }
 }

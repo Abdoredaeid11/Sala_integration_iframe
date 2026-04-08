@@ -33,7 +33,7 @@ class ShippingController extends Controller
         try {
             $this->session = $request->get('sallaSession');
 
-            $this->setting = Setting::where('session_id', $this->session->id)->first();
+            $this->setting = Setting::where('merchant', $this->session->merchant)->first();
 
             $orders = $this->getOrders($request->input('page'));
 
@@ -47,7 +47,7 @@ class ShippingController extends Controller
 
             if ($shipmentIds->isNotEmpty()) {
                 $shipments = Shipment::whereIn('order_id', $shipmentIds)
-                    ->where('session_id', $this->session->id)
+                    ->where('merchant', $this->session->merchant)
                     ->get();
 
                 /** @var mixed */
@@ -82,7 +82,7 @@ class ShippingController extends Controller
                 $accurateShipments->each(function ($accurateShipment) use (&$orders, $shipments) {
                     $shipment = $shipments
                         ->where('shipment_id', $accurateShipment['id'])
-                        ->where('session_id', $this->session->id)
+                        ->where('merchant', $this->session->merchant)
                         ->first();
 
                     $params = [
@@ -120,7 +120,7 @@ class ShippingController extends Controller
                 // Deferred shipments are local shipments that don't exist in the Accurate provider's response
                 if ($deferredShipmentsIds = array_diff($shipments->pluck('shipment_id')->toArray(), $accurateShipments->pluck('id')->toArray())) {
                     $deferredShipments = $shipments
-                        ->where('session_id', $this->session->id)
+                        ->where('merchant', $this->session->merchant)
                         ->whereIn('shipment_id', $deferredShipmentsIds)
                         ->all();
 
@@ -268,7 +268,7 @@ class ShippingController extends Controller
         $data = $request->all();
 
         $this->session = $request->get('sallaSession');
-        $this->setting = Setting::with('user')->where('session_id', $this->session->id)->first();
+        $this->setting = Setting::with('user')->where('merchant', $this->session->merchant)->first();
 
         if ($this->setting->expired) {
             return response()->json('Token is expired', status: 402);
@@ -320,7 +320,7 @@ class ShippingController extends Controller
             }
 
             // save shipment to be shipped
-            if (!($result = $this->saveShipment($order, $this->session->id))) {
+            if (!($result = $this->saveShipment($order, $this->session->merchant))) {
                 break;
             }
         }
@@ -329,7 +329,7 @@ class ShippingController extends Controller
     }
 
     // shipment create/update
-    protected function saveShipment($order, $sessionId)
+    protected function saveShipment($order, $merchant)
     {
         $output = [ShipmentField::ID, ShipmentField::CODE, ShipmentField::TRACKING_URL, ShipmentField::DELIVEREDORRETURNEDDATE, ShipmentField::DATE, ShipmentField::CREATEDAT, ShipmentField::status([DropDownField::ID, DropDownField::CODE, DropDownField::NAME])];
 
@@ -427,7 +427,7 @@ class ShippingController extends Controller
         }
 
         if ($shipment) {
-            $this->syncShipment($shipment, $order['id'], $sessionId);
+            $this->syncShipment($shipment, $order['id'], $merchant);
         }
 
         return true;
@@ -454,7 +454,7 @@ class ShippingController extends Controller
     }
 
     // sync shipment
-    private function syncShipment($shipment, $orderId, $sessionId)
+    private function syncShipment($shipment, $orderId, $merchant)
     {
         /** @var Shipment */
         $syncedShipment = new Shipment();
@@ -465,7 +465,7 @@ class ShippingController extends Controller
             'delivered_at' => $shipment['deliveredOrReturnedDate'],
             'tracking' => $shipment['trackingUrl'],
             'shipping_fees' => 0,
-            'session_id' => $sessionId,
+            'merchant' => $merchant,
             'order_id' => $orderId,
         ];
         $syncedShipment->forceFill($params);
@@ -556,7 +556,7 @@ class ShippingController extends Controller
         $this->session = $request->get('sallaSession');
 
         /** @var ?Setting */
-        $setting = Setting::with('user')->where('session_id', $this->session->id)->first();
+        $setting = Setting::with('user')->where('merchant', $this->session->merchant)->first();
 
         if (!$setting || !$setting->user) {
             return response()->json(['error' => 'Settings not found'], 404);
