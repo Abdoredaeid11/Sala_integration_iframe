@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Accurate Shipping Integration</title>
+    <title>Accurate Logistics</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://unpkg.com/alpinejs@3.13.10/dist/cdn.min.js" defer></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
@@ -231,7 +231,7 @@
         <!-- Top Navbar (solid modern, always visible) -->
         <div class="fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 shadow-sm z-50">
             <div class="max-w-none w-full h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-                <div class="text-gray-900 font-semibold">Accurate Shipping</div>
+                <div class="text-gray-900 font-semibold">Accurate Logistics</div>
                 <nav class="flex items-center gap-6" aria-label="Primary">
                     <button @click="switchTab('orders')"
                         class="text-sm font-medium transition-colors focus:outline-none"
