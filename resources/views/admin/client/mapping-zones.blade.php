@@ -153,13 +153,13 @@
                                     <!-- Subzone Selection -->
                                     <div class="col-12 col-md-3 subzone-container">
                                         <label for="{{ $province['id'] }}_accurateSubzones"
-                                            class="form-label d-md-none">Subzone</label>
+                                             class="form-label d-md-none">Subzone</label>
                                         <div class="position-relative subzone-wrapper">
                                             <select class="form-select accurate-subzones"
                                                 name="{{ $province['id'] }}_accurateSubzones"
                                                 id="{{ $province['id'] }}_accurateSubzones"
                                                 data-province-id="{{ $province['id'] }}" data-bs-toggle="tooltip"
-                                                title="Select a subzone" disabled>
+                                                title="Select a subzone" >
                                                 <option value=""></option>
                                             </select>
                                             <div class="no-subzones d-none">
@@ -750,6 +750,7 @@
                         subzones = await this.subzoneCache[zoneId];
                     } else {
                         const finalUrl = this.baseUrlTemplate.replace('ZONE_ID_PLACEHOLDER', zoneId);
+                        console.log('URL =>', finalUrl);
 
                         this.subzoneCache[zoneId] = fetch(finalUrl).then(response => {
                             if (!response.ok) {

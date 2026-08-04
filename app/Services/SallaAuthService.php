@@ -9,6 +9,7 @@ use League\OAuth2\Client\Token\AccessToken;
 use Salla\OAuth2\Client\Provider\SallaUser;
 use Illuminate\Support\Traits\ForwardsCalls;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
+use App\Models\User;
 
 /**
  * @mixin Salla
@@ -46,6 +47,22 @@ class SallaAuthService
     public function forUser(Session $session)
     {
         $this->session = $session;
+
+        return $this;
+    }
+    public function forProvider(User $provider)
+    {
+        info(secure_url(
+            $provider->id . '/oauth/callback'
+        ));
+
+        $this->provider = new Salla([
+            'clientId'     => $provider->client_id,
+            'clientSecret' => $provider->client_secret,
+            'redirectUri'  => secure_url(
+                $provider->id . '/oauth/callback'
+            ),
+        ]);
 
         return $this;
     }
@@ -96,16 +113,20 @@ class SallaAuthService
      */
     public function getNewAccessToken()
     {
-        if ($this->session->expires_at->isPast()) {
+        if (!$this->session->refresh_token) {
+            throw new \RuntimeException('No refresh token available for Salla session.');
+        }
+
+        $shouldRefresh = !$this->session->expires_at || $this->session->expires_at->subMinutes(5)->isPast();
+
+        if (!$shouldRefresh) {
             return new AccessToken($this->session->toArray());
         }
 
-        // let's request a new access token via refresh token.
         $token = $this->provider->getAccessToken('refresh_token', [
             'refresh_token' => $this->session->refresh_token
         ]);
 
-        // lets update user tokens
         $this->session->forceFill([
             'access_token'  => $token->getToken(),
             'expires_at'    => Carbon::createFromTimestamp($token->getExpires())->toDateTimeString(),

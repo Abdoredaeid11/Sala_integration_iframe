@@ -33,7 +33,11 @@ class ShippingController extends Controller
         try {
             $this->session = $request->get('sallaSession');
 
-            $this->setting = Setting::where('merchant', $this->session->merchant)->first();
+            if (!$this->session || !$this->session->access_token) {
+                return response()->json(['error' => 'Salla session is not available'], 401);
+            }
+
+            $this->setting = Setting::where('merchant', $this->session->merchant)->where('provider_id', $this->session->provider_id)->first();
 
             $orders = $this->getOrders($request->input('page'));
 
@@ -229,7 +233,11 @@ class ShippingController extends Controller
         $ordersResponse = Http::withToken($this->session->access_token)
             ->get(config('services.salla.api_url') . "/orders", $query);
 
-        if ($ordersResponse->getStatusCode() !== 200) {
+        if (!$ordersResponse->successful()) {
+            info('Salla orders API failed', [
+                'status' => $ordersResponse->status(),
+                'body' => $ordersResponse->body(),
+            ]);
             return [
                 'data' => [],
                 'pagination' => [
@@ -242,9 +250,15 @@ class ShippingController extends Controller
         $shipmentsResponse = Http::withToken($this->session->access_token)
             ->get(config('services.salla.api_url') . "/shipments", $query);
 
-        $orders = collect($ordersResponse->json()['data']);
+        if (!$shipmentsResponse->successful()) {
+            info('Salla shipments API failed', [
+                'status' => $shipmentsResponse->status(),
+                'body' => $shipmentsResponse->body(),
+            ]);
+        }
 
-        $shipments = collect($shipmentsResponse->json()['data']);
+        $orders = collect($ordersResponse->json('data') ?? []);
+        $shipments = collect($shipmentsResponse->json('data') ?? []);
 
         $orders = $orders->map(function ($order) use ($shipments) {
             $order['salla_shipment'] = $shipments->where('order_id', $order['id'])->first();
@@ -254,6 +268,10 @@ class ShippingController extends Controller
 
         $response = $ordersResponse->json();
         $response['data'] = $orders->toArray();
+        $response['pagination'] = $response['pagination'] ?? [
+            'hasNextPage'       => false,
+            'hasPreviousPage'   => false,
+        ];
 
         return $response;
     }
@@ -268,7 +286,7 @@ class ShippingController extends Controller
         $data = $request->all();
 
         $this->session = $request->get('sallaSession');
-        $this->setting = Setting::with('user')->where('merchant', $this->session->merchant)->first();
+        $this->setting = Setting::with('user')->where('merchant', $this->session->merchant)->where('provider_id', $this->session->provider_id)->first();
 
         if ($this->setting->expired) {
             return response()->json('Token is expired', status: 402);
@@ -427,7 +445,7 @@ class ShippingController extends Controller
         }
 
         if ($shipment) {
-            $this->syncShipment($shipment, $order['id'], $merchant);
+            $this->syncShipment($shipment, $order['id'], $merchant,$this->setting->provider_id);
         }
 
         return true;
@@ -454,7 +472,7 @@ class ShippingController extends Controller
     }
 
     // sync shipment
-    private function syncShipment($shipment, $orderId, $merchant)
+    private function syncShipment($shipment, $orderId, $merchant,$providerId)
     {
         /** @var Shipment */
         $syncedShipment = new Shipment();
@@ -467,6 +485,7 @@ class ShippingController extends Controller
             'shipping_fees' => 0,
             'merchant' => $merchant,
             'order_id' => $orderId,
+            'provider_id' => $providerId,
         ];
         $syncedShipment->forceFill($params);
         $syncedShipment->save();
@@ -556,7 +575,7 @@ class ShippingController extends Controller
         $this->session = $request->get('sallaSession');
 
         /** @var ?Setting */
-        $setting = Setting::with('user')->where('merchant', $this->session->merchant)->first();
+        $setting = Setting::with('user')->where('merchant', $this->session->merchant)->where('provider_id', $this->session->provider_id)->first();
 
         if (!$setting || !$setting->user) {
             return response()->json(['error' => 'Settings not found'], 404);

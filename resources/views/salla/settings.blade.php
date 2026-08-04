@@ -18,18 +18,7 @@
             <div class="bg-gray-50 p-6 rounded-lg border">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Authentication Credentials</h3>
                 <div class="space-y-5">
-                    <div>
-                        <label for="client" class="block text-sm font-medium text-gray-700 mb-2">Provider</label>
-                        <select id="client" x-model="settings.user_id" @change="onClientChange()"
-                            class="block w-full pl-4 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md shadow-sm">
-                            <option value="">Select a Provider</option>
-                            <template x-for="client in apiData.clients" :key="client.id">
-                                <option :value="client.id" x-text="client.name"></option>
-                            </template>
-                        </select>
-                        <p x-show="errors.user_id" class="text-sm text-red-600 mt-2"
-                            x-text="errors.user_id ? errors.user_id[0] : ''"></p>
-                    </div>
+
                     <div>
                         <label for="token" class="block text-sm font-medium text-gray-700 mb-2">Authentication
                             Token</label>
@@ -63,7 +52,7 @@
 
             <!-- Save Credentials -->
             <div class="pt-6 text-center">
-                <button type="submit" :disabled="!settings.user_id || !settings.token || loading.credentials"
+                <button type="submit" :disabled="!settings.token || loading.credentials"
                     class="w-full sm:w-auto inline-flex justify-center items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg transition duration-200">
                     <svg x-show="!loading.credentials" class="w-5 h-5 mr-2" viewbox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

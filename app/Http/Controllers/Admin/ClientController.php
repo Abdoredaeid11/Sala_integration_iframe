@@ -42,6 +42,9 @@ class ClientController extends Controller
             'password'                  => $clientId ? 'nullable|string|min:6|confirmed' : 'required|string|min:6|confirmed',
             'password_confirmation'     => $clientId ? 'nullable|string|min:6' : 'required|string|min:6',
             'country_id'                => 'required|integer|exists:countries,id',
+            'client_id'                 => 'nullable|string|max:255|unique:users,client_id,' . $client->id,
+            'client_secret'             => 'nullable|string|max:255',
+            'webhook_secret'            => 'nullable|string|max:255',
         ]);
 
         $client->name = $request->name;
@@ -49,6 +52,17 @@ class ClientController extends Controller
         $client->country_id = $request->country_id;
         $client->domain = $request->domain;
         $client->active = $request->active == '1' ? 1 : 0;
+        if ($request->filled('client_id')) {
+            $client->client_id = $request->client_id;
+        }
+
+        if ($request->filled('client_secret')) {
+            $client->client_secret = $request->client_secret;
+        }
+
+        if ($request->filled('webhook_secret')) {
+            $client->webhook_secret = $request->webhook_secret;
+        }
 
         if ($request->password)
             $client->password = Hash::make($request->password);

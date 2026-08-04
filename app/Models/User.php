@@ -17,6 +17,9 @@ class User extends Authenticatable
         'password',
         'domain',
         'country_id',
+        'client_id',
+        'client_secret',
+        'webhook_secret',
     ];
 
     /**

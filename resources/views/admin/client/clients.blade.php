@@ -267,6 +267,29 @@
                                 placeholder="Domain">
                             <label for="createDomain">Domain</label>
                         </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="text" name="client_id" class="form-control" id="createClientId"
+                                        placeholder="Client ID">
+                                    <label for="createClientId">Client ID</label>
+                                </div>
+                            </div>
+
+
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="text" name="client_secret" class="form-control"
+                                        id="createClientSecret" placeholder="Client Secret">
+                                    <label for="createClientSecret">Client Secret</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input type="text" name="webhook_secret" class="form-control" id="createWebhookSecret"
+                                placeholder="Webhook Secret">
+                            <label for="createWebhookSecret">Webhook Secret</label>
+                        </div>
 
                         <div class="form-floating mb-3">
                             <input type="password" name="password" class="form-control" id="createPassword"
@@ -349,6 +372,28 @@
                             <input type="text" name="domain" class="form-control" id="editDomain"
                                 placeholder="Domain" required>
                             <label for="editDomain">Domain</label>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="text" name="client_id" class="form-control" id="editClientId"
+                                        placeholder="Client ID">
+                                    <label for="editClientId">Client ID</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="text" name="client_secret" class="form-control"
+                                        id="editClientSecret" placeholder="Client Secret">
+                                    <label for="editClientSecret">Client Secret</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input type="text" name="webhook_secret" class="form-control" id="editWebhookSecret"
+                                placeholder="Webhook Secret">
+                            <label for="editWebhookSecret">Webhook Secret</label>
                         </div>
 
                         <div class="form-floating mb-3">

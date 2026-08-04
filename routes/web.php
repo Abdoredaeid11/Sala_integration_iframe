@@ -11,17 +11,21 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 // Salla Auth OAuth routes
-Route::get('/oauth/redirect', [SessionController::class, 'redirect'])->name('oauth.redirect');
-Route::get('/oauth/callback', [SessionController::class, 'callback'])->name('oauth.callback');
 
-Route::middleware('salla.auth')
+Route::get('/install', [SessionController::class, 'install'])
+    ->name('install');
+
+Route::get('/{provider}/oauth/redirect', [SessionController::class, 'redirect'])->name('oauth.redirect');
+Route::get('/{provider}/oauth/callback', [SessionController::class, 'callback'])->name('oauth.callback');
+
+Route::middleware('salla.auth',)
     ->get('/', function () {
         return view('layouts.salla');
     })->name('home');
 
 
 // API routes with proper session handling
-Route::middleware(['salla.auth'])->prefix('api')->name('api.')->group(function () {
+Route::middleware(['salla.auth',])->prefix('api')->name('api.')->group(function () {
     // Settings API Routes
     Route::get('/users', [SettingController::class, 'listUsers'])->name('users');
     Route::get('/setting/get', [SettingController::class, 'index'])->name('settings.get');

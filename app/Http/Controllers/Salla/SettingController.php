@@ -35,7 +35,7 @@ class SettingController extends Controller
                 return response()->json(['setting' => null]);
             }
 
-            $setting = Setting::where('merchant', $session->merchant)->first();
+            $setting = Setting::where('merchant', $session->merchant)->where('provider_id', $session->provider_id)->where('provider_id', $session->provider_id)->first();
 
             return response()->json(['setting' => $setting]);
         } catch (\Exception $e) {
@@ -47,17 +47,25 @@ class SettingController extends Controller
     public function validateToken(Request $request)
     {
         try {
+            $session = $request->get('sallaSession');
+
+            if (!$session) {
+                return response()->json([
+                    'valid' => false,
+                    'message' => 'No valid Salla session'
+                ], 401);
+            }
+
             $validated = $request->validate([
-                'user_id'   => ['required'],
-                'token'     => ['required', 'string'],
+                'token' => ['required', 'string'],
             ]);
 
-            $user = User::find($validated['user_id']);
+            $user = User::find($session->provider_id);
 
             if (!$user) {
                 return response()->json([
                     'valid' => false,
-                    'message' => 'User not found'
+                    'message' => 'Provider not found'
                 ], 400);
             }
 
@@ -65,7 +73,6 @@ class SettingController extends Controller
                 ? "https://" . $user->domain . ':8443/graphql'
                 : "http://" . $user->domain . ':8000/graphql';
 
-            // Initialize client with user credentials
             Client::init(
                 $url,
                 [
@@ -74,22 +81,25 @@ class SettingController extends Controller
                 ]
             );
 
-            // Try to fetch shipments as a test query
-            $response = (new Shipment())->listShipments(new ListShipmentFilter(), [ShipmentField::ID]);
+            $response = (new Shipment())->listShipments(
+                new ListShipmentFilter(),
+                [ShipmentField::ID]
+            );
 
             if (isset($response->data['data'])) {
                 return response()->json([
                     'valid' => true,
                     'message' => 'Token is valid'
                 ]);
-            } else {
-                return response()->json([
-                    'valid' => false,
-                    'message' => 'Token is invalid'
-                ], 401);
             }
+
+            return response()->json([
+                'valid' => false,
+                'message' => 'Token is invalid'
+            ], 401);
         } catch (\Exception $e) {
             Log::error('Token validation error: ' . $e->getMessage());
+
             return response()->json([
                 'valid' => false,
                 'message' => 'Token validation failed: ' . $e->getMessage()
@@ -105,24 +115,32 @@ class SettingController extends Controller
         try {
             $session = $request->get('sallaSession');
 
+            Log::info('Salla Session Debug', [
+                'session_exists' => !is_null($session),
+                'session_data' => $session ? (array) $session : null,
+            ]);
+
             if (!$session) {
                 Log::error('No session found');
                 return response()->json(['error' => 'No valid session found'], 401);
             }
 
             $validated = $request->validate([
-                'user_id' => ['required'],
                 'token' => ['required', 'string'],
             ]);
 
-            $user = User::find($validated['user_id']);
+            $session = $request->get('sallaSession');
+
+            $user = User::find($session->provider_id);
 
             if (!$user) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'User not found'
+                    'message' => 'Provider not found'
                 ], 400);
             }
+
+
 
             $url = app()->isProduction()
                 ? "https://" . $user->domain . ':8443/graphql'
@@ -147,16 +165,16 @@ class SettingController extends Controller
                 ], 401);
             }
 
-            $existingSetting = Setting::where('merchant', $session->merchant)->first();
+            $existingSetting = Setting::where('merchant', $session->merchant)->where('provider_id', $session->provider_id)->first();
             $setting = $existingSetting ?? new Setting();
 
             // Check if credentials changed - if so, reset operation fields
             $credentialsChanged = !$existingSetting ||
-                $existingSetting->user_id != $validated['user_id'] ||
                 $existingSetting->token != $validated['token'];
 
             $params = [
-                'user_id' => $validated['user_id'],
+                'user_id' => $session->provider_id,
+                'provider_id' => $session->provider_id,
                 'token' => $validated['token'],
                 'expired' => false,
                 'merchant' => $session->merchant,
@@ -221,7 +239,7 @@ class SettingController extends Controller
                 'openable_code' => ['required', 'in:Y,N'],
             ]);
 
-            $setting = Setting::where('merchant', $session->merchant)->first();
+            $setting = Setting::where('merchant', $session->merchant)->where('user_id', $session->provider_id)->first();
 
             if (!$setting || !$setting->user_id || !$setting->token) {
                 return response()->json([
@@ -281,7 +299,6 @@ class SettingController extends Controller
             }
 
             $validated = $request->validate([
-                'user_id' => ['required'],
                 'token' => ['required', 'string'],
                 'service_id' => ['nullable'],
                 'from_zone_id' => ['nullable'],
@@ -289,17 +306,17 @@ class SettingController extends Controller
                 'openable_code' => ['required', 'in:Y,N'],
             ]);
 
-            $existingSetting = Setting::where('merchant', $session->merchant)->first();
+            $existingSetting = Setting::where('merchant', $session->merchant)->where('provider_id', $session->provider_id)->first();
             $setting = $existingSetting ?? new Setting();
 
             // Check if credentials changed - if so, reset operation fields
             $credentialsChanged = !$existingSetting ||
-                $existingSetting->user_id != $validated['user_id'] ||
                 $existingSetting->token != $validated['token'];
 
             $params = [
                 'merchant' => $session->merchant,
-                'user_id' => $validated['user_id'],
+                'user_id' => $session->provider_id,
+                'provider_id' => $session->provider_id,
                 'token' => $validated['token'],
                 'expired' => false,
             ];
@@ -364,7 +381,7 @@ class SettingController extends Controller
             if (!$userId || !$token) {
                 // Fallback to session-based approach for backward compatibility
                 $session = $request->get('sallaSession');
-                $setting = Setting::where('merchant', $session->merchant)->first();
+                $setting = Setting::where('merchant', $session->merchant)->where('provider_id', $session->provider_id)->first();
 
                 if (!$setting || !$setting->user_id || !$setting->token) {
                     return response()->json([]);
@@ -415,7 +432,7 @@ class SettingController extends Controller
             if (!$userId || !$token) {
                 // Fallback to session-based approach for backward compatibility
                 $session = $request->get('sallaSession');
-                $setting = Setting::where('merchant', $session->merchant)->first();
+                $setting = Setting::where('merchant', $session->merchant)->where('provider_id', $session->provider_id)->first();
 
                 if (!$setting || !$setting->token || !$setting->user_id) {
                     return response()->json([]);
