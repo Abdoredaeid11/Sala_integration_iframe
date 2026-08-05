@@ -21,7 +21,6 @@ class WebhookRequest extends FormRequest
 
         Log::info('Webhook Signature Check', [
             'provider_id' => $providerId,
-            'provider_exists' => !!$provider,
             'headers' => $this->headers->all(),
             'body' => $this->getContent(),
         ]);
@@ -43,6 +42,16 @@ class WebhookRequest extends FormRequest
 
             return false;
         }
+
+        return match ($this->header('X-Salla-Security-Strategy')) {
+            'Signature' => $this->validateSignature($secret),
+            'Token'     => $this->validateToken($secret),
+        };
+    }
+
+    protected function validateSignature(string $secret)
+    {
+        $providerId = $this->route('provider');
 
         $requestSignature = $this->header('x-salla-signature');
 
@@ -66,6 +75,17 @@ class WebhookRequest extends FormRequest
         ]);
 
         return $isValid;
+    }
+
+    protected function validateToken(string $secret)
+    {
+        info(json_encode([
+            'provider_id' => $this->route('provider'),
+            'token' => $this->header('Authorization'),
+            'secret' => $secret,
+        ]));
+
+        return $this->header('Authorization') == $secret;
     }
 
     /**
