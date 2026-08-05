@@ -54,16 +54,9 @@ class WebhookRequest extends FormRequest
             return false;
         }
 
-        $computedSignature = hash_hmac(
-            'sha256',
-            $this->getContent(),
-            $secret
-        );
+        $computedSignature = hash_hmac('sha256', $this->getContent(), $secret);
 
-        $isValid = hash_equals(
-            $requestSignature,
-            $computedSignature
-        );
+        $isValid = hash_equals($requestSignature, $computedSignature);
 
         Log::info('Webhook Signature Result', [
             'provider_id' => $providerId,

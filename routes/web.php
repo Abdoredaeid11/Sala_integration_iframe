@@ -11,10 +11,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 // Salla Auth OAuth routes
-
-Route::get('/install', [SessionController::class, 'install'])
-    ->name('install');
-
 Route::get('/{provider}/oauth/redirect', [SessionController::class, 'redirect'])->name('oauth.redirect');
 Route::get('/{provider}/oauth/callback', [SessionController::class, 'callback'])->name('oauth.callback');
 

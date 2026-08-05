@@ -12,11 +12,8 @@ use Illuminate\Support\Facades\Hash;
 class ClientController extends Controller
 {
     /**
-     *
-     *
      * @param Request $request
      * @return View
-
      */
     public function clients(Request $request): View
     {
@@ -26,8 +23,14 @@ class ClientController extends Controller
     }
 
     /**
-     *
-     *
+     * @param Request $request
+     */
+    public function update(Request $request, $clientId)
+    {
+        return $this->store($request, $clientId);
+    }
+
+    /**
      * @param Request $request
      */
     public function store(Request $request, $clientId = null)
@@ -42,9 +45,9 @@ class ClientController extends Controller
             'password'                  => $clientId ? 'nullable|string|min:6|confirmed' : 'required|string|min:6|confirmed',
             'password_confirmation'     => $clientId ? 'nullable|string|min:6' : 'required|string|min:6',
             'country_id'                => 'required|integer|exists:countries,id',
-            'client_id'                 => 'nullable|string|max:255|unique:users,client_id,' . $client->id,
-            'client_secret'             => 'nullable|string|max:255',
-            'webhook_secret'            => 'nullable|string|max:255',
+            'client_id'                 => 'required|string|max:255|unique:users,client_id,' . $client->id,
+            'client_secret'             => 'required|string|max:255',
+            'webhook_secret'            => 'required|string|max:255',
         ]);
 
         $client->name = $request->name;
@@ -52,17 +55,9 @@ class ClientController extends Controller
         $client->country_id = $request->country_id;
         $client->domain = $request->domain;
         $client->active = $request->active == '1' ? 1 : 0;
-        if ($request->filled('client_id')) {
-            $client->client_id = $request->client_id;
-        }
-
-        if ($request->filled('client_secret')) {
-            $client->client_secret = $request->client_secret;
-        }
-
-        if ($request->filled('webhook_secret')) {
-            $client->webhook_secret = $request->webhook_secret;
-        }
+        $client->client_id = $request->client_id;
+        $client->client_secret = $request->client_secret;
+        $client->webhook_secret = $request->webhook_secret;
 
         if ($request->password)
             $client->password = Hash::make($request->password);
@@ -72,16 +67,6 @@ class ClientController extends Controller
         $message = $clientId ? 'Client updated successfully' : 'Client added successfully';
 
         return response()->json(['client' => $client, 'success' => $message]);
-    }
-
-    /**
-     *
-     *
-     * @param Request $request
-     */
-    public function update(Request $request, $clientId)
-    {
-        return $this->store($request, $clientId);
     }
 
     /**

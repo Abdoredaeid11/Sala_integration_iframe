@@ -28,14 +28,7 @@ class SallaAuthService
      */
     public $session;
 
-    public function __construct()
-    {
-        $this->provider = new Salla([
-            'clientId'     => config('services.salla.client_id'), // The client ID assigned to you by Salla
-            'clientSecret' => config('services.salla.client_secret'), // The client password assigned to you by Salla
-            'redirectUri'  => $this->isEasyMode() ? null : config('services.salla.redirect'), // the url for current page in your service
-        ]);
-    }
+    public function __construct() {}
 
     /**
      * Get the token from the Session model.
@@ -50,18 +43,13 @@ class SallaAuthService
 
         return $this;
     }
+
     public function forProvider(User $provider)
     {
-        info(secure_url(
-            $provider->id . '/oauth/callback'
-        ));
-
         $this->provider = new Salla([
             'clientId'     => $provider->client_id,
             'clientSecret' => $provider->client_secret,
-            'redirectUri'  => secure_url(
-                $provider->id . '/oauth/callback'
-            ),
+            'redirectUri'  => secure_url($provider->id . '/oauth/callback'),
         ]);
 
         return $this;

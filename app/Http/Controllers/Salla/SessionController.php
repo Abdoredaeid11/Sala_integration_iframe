@@ -9,7 +9,6 @@ use App\Services\SallaAuthService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
-use Illuminate\Support\Facades\Http;
 
 
 class SessionController extends Controller
@@ -23,6 +22,7 @@ class SessionController extends Controller
     {
         $this->service = $service;
     }
+
     public function redirect(Request $request, $provider)
     {
         $shippingProvider = User::findOrFail($provider);
@@ -31,11 +31,7 @@ class SessionController extends Controller
             abort(403);
         }
 
-        return redirect(
-            $this->service
-                ->forProvider($shippingProvider)
-                ->getAuthorizationUrl()
-        );
+        return redirect($this->service->forProvider($shippingProvider)->getAuthorizationUrl());
     }
 
     public function callback(Request $request, $provider)
@@ -79,9 +75,7 @@ class SessionController extends Controller
             'merchant'      => $user->getStoreId(),
             'provider_id'   => $shippingProvider->id,
             'access_token'  => $token->getToken(),
-            'expires_at'    => Carbon::createFromTimestamp(
-                $token->getExpires()
-            )->toDateTimeString(),
+            'expires_at'    => Carbon::createFromTimestamp($token->getExpires())->toDateTimeString(),
             'refresh_token' => $token->getRefreshToken(),
         ])->save();
 
@@ -98,17 +92,5 @@ class SessionController extends Controller
         );
 
         return redirect()->route('home');
-    }
-
-    public function install(Request $request)
-    {
-
-        abort_if(!$request->provider_id, 404);
-
-        session([
-            'oauth_provider_id' => (int) $request->provider_id
-        ]);
-
-        return redirect()->route('oauth.redirect');
     }
 }

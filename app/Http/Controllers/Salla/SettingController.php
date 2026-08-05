@@ -35,7 +35,7 @@ class SettingController extends Controller
                 return response()->json(['setting' => null]);
             }
 
-            $setting = Setting::where('merchant', $session->merchant)->where('provider_id', $session->provider_id)->where('provider_id', $session->provider_id)->first();
+            $setting = Setting::where('merchant', $session->merchant)->where('provider_id', $session->provider_id)->first();
 
             return response()->json(['setting' => $setting]);
         } catch (\Exception $e) {
@@ -140,8 +140,6 @@ class SettingController extends Controller
                 ], 400);
             }
 
-
-
             $url = app()->isProduction()
                 ? "https://" . $user->domain . ':8443/graphql'
                 : "http://" . $user->domain . ':8000/graphql';
@@ -239,9 +237,9 @@ class SettingController extends Controller
                 'openable_code' => ['required', 'in:Y,N'],
             ]);
 
-            $setting = Setting::where('merchant', $session->merchant)->where('user_id', $session->provider_id)->first();
+            $setting = Setting::where('merchant', $session->merchant)->where('provider_id', $session->provider_id)->first();
 
-            if (!$setting || !$setting->user_id || !$setting->token) {
+            if (!$setting || !$setting->provider_id || !$setting->token) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Credentials must be saved first'

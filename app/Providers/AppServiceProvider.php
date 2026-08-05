@@ -6,11 +6,6 @@ use App\Services\SallaAuthService;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Http\Client\Response;
-use GuzzleHttp\Promise\PromiseInterface;
-use Psr\Http\Message\ResponseInterface;
-
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -33,22 +28,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // Http::macro('normalize', function ($response): Response {
-        //     if ($response instanceof PromiseInterface) {
-        //         $response = $response->wait();
-        //     }
-
-        //     if ($response instanceof ResponseInterface) {
-        //         return new Response($response);
-        //     }
-
-        //     if ($response instanceof Response) {
-        //         return $response;
-        //     }
-
-        //     throw new \RuntimeException('Unsupported response type');
-        // });
-
         if (config('app.env') == 'production') {
             URL::forceScheme('https');
         }
