@@ -79,12 +79,6 @@ class WebhookRequest extends FormRequest
 
     protected function validateToken(string $secret)
     {
-        info(json_encode([
-            'provider_id' => $this->route('provider'),
-            'token' => $this->header('Authorization'),
-            'secret' => $secret,
-        ]));
-
         return $this->header('Authorization') == $secret;
     }
 
