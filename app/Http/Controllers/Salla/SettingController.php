@@ -171,7 +171,6 @@ class SettingController extends Controller
                 $existingSetting->token != $validated['token'];
 
             $params = [
-                'user_id' => $session->provider_id,
                 'provider_id' => $session->provider_id,
                 'token' => $validated['token'],
                 'expired' => false,
@@ -313,7 +312,6 @@ class SettingController extends Controller
 
             $params = [
                 'merchant' => $session->merchant,
-                'user_id' => $session->provider_id,
                 'provider_id' => $session->provider_id,
                 'token' => $validated['token'],
                 'expired' => false,
@@ -373,23 +371,23 @@ class SettingController extends Controller
     public function services(Request $request)
     {
         try {
-            $userId = $request->query('user_id');
+            $providerId = $request->query('provider_id', $request->query('user_id'));
             $token = $request->query('token');
 
-            if (!$userId || !$token) {
+            if (!$providerId || !$token) {
                 // Fallback to session-based approach for backward compatibility
                 $session = $request->get('sallaSession');
                 $setting = Setting::where('merchant', $session->merchant)->where('provider_id', $session->provider_id)->first();
 
-                if (!$setting || !$setting->user_id || !$setting->token) {
+                if (!$setting || !$setting->provider_id || !$setting->token) {
                     return response()->json([]);
                 }
 
-                $userId = $setting->user_id;
+                $providerId = $setting->provider_id;
                 $token = $setting->token;
             }
 
-            $user = User::find($userId);
+            $user = User::find($providerId);
             if (!$user) {
                 return response()->json([]);
             }
@@ -424,23 +422,23 @@ class SettingController extends Controller
     public function zones(Request $request, $id = null)
     {
         try {
-            $userId = $request->query('user_id');
+            $providerId = $request->query('provider_id', $request->query('user_id'));
             $token = $request->query('token');
 
-            if (!$userId || !$token) {
+            if (!$providerId || !$token) {
                 // Fallback to session-based approach for backward compatibility
                 $session = $request->get('sallaSession');
                 $setting = Setting::where('merchant', $session->merchant)->where('provider_id', $session->provider_id)->first();
 
-                if (!$setting || !$setting->token || !$setting->user_id) {
+                if (!$setting || !$setting->token || !$setting->provider_id) {
                     return response()->json([]);
                 }
 
-                $userId = $setting->user_id;
+                $providerId = $setting->provider_id;
                 $token = $setting->token;
             }
 
-            $user = User::find($userId);
+            $user = User::find($providerId);
             if (!$user) {
                 return response()->json([]);
             }

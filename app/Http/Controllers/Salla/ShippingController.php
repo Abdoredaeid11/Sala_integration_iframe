@@ -552,7 +552,7 @@ class ShippingController extends Controller
         $mappedZone = Province::where('country_id', $country->id)
             ->where('external_id', $order['shipping']['city_id'])->first()?->id;
 
-        $zone = MappedZone::where('mapped_zone_id', $mappedZone)->where('user_id', $this->setting->user_id)->first();
+        $zone = MappedZone::where('mapped_zone_id', $mappedZone)->where('user_id', $this->setting->provider_id)->first();
 
         if (!isset($zone) || !isset($mappedZone)) {
             throw new Exception('There is no zone mapped for the order: ' . $order['reference_id'] . ' zone');

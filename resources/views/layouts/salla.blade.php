@@ -286,7 +286,7 @@
                 showPassword: false,
 
                 settings: {
-                    user_id: '',
+                    provider_id: '',
                     token: '',
                     service_id: '',
                     from_zone_id: '',
@@ -355,7 +355,7 @@
                         this.loadingMessage = 'Loading settings...';
                         this.pageLoading = true;
                         // Ensure settings data is loaded
-                        if (this.settings.user_id && this.settings.token) {
+                        if (this.settings.provider_id && this.settings.token) {
                             await this.loadDependentData();
                         }
                         this.pageLoading = false;
@@ -443,14 +443,14 @@
                         const d = await r.json();
                         if (d.setting) {
                             const savedSettings = d.setting;
-                            if (savedSettings.user_id && savedSettings.token) {
+                            if (savedSettings.provider_id && savedSettings.token) {
                                 await this.loadDependentDataForSettings(savedSettings);
                             }
                             this.settings = {
                                 ...this.settings,
                                 ...savedSettings
                             };
-                            this.credentialsValidated = !!(savedSettings.user_id && savedSettings.token);
+                            this.credentialsValidated = !!(savedSettings.provider_id && savedSettings.token);
                         }
                     } catch (error) {
                         this.showToast('Failed to load settings', 'error');
@@ -461,14 +461,14 @@
                     const originalSettings = {
                         ...this.settings
                     };
-                    this.settings.user_id = savedSettings.user_id;
+                    this.settings.provider_id = savedSettings.provider_id;
                     this.settings.token = savedSettings.token;
                     await this.loadDependentData();
                     this.settings = originalSettings;
                 },
 
                 async loadDependentData() {
-                    if (this.settings.user_id && this.settings.token) {
+                    if (this.settings.provider_id && this.settings.token) {
                         await Promise.all([
                             this.fetchServices(),
                             this.fetchZones()
@@ -480,12 +480,12 @@
                 },
 
                 async fetchServices() {
-                    if (!this.settings.user_id || !this.settings.token) return;
+                    if (!this.settings.provider_id || !this.settings.token) return;
 
                     this.loading.services = true;
                     try {
                         const url = this.buildApiUrl(
-                            `/api/setting/services?user_id=${this.settings.user_id}&token=${encodeURIComponent(this.settings.token)}`
+                            `/api/setting/services?provider_id=${this.settings.provider_id}&token=${encodeURIComponent(this.settings.token)}`
                         );
                         const r = await fetch(url);
                         if (r.ok) {
@@ -501,12 +501,12 @@
                 },
 
                 async fetchZones() {
-                    if (!this.settings.user_id || !this.settings.token) return;
+                    if (!this.settings.provider_id || !this.settings.token) return;
 
                     this.loading.zones = true;
                     try {
                         const url = this.buildApiUrl(
-                            `/api/setting/zones?user_id=${this.settings.user_id}&token=${encodeURIComponent(this.settings.token)}`
+                            `/api/setting/zones?provider_id=${this.settings.provider_id}&token=${encodeURIComponent(this.settings.token)}`
                         );
                         const r = await fetch(url);
                         if (r.ok) {
@@ -522,12 +522,12 @@
                 },
 
                 async fetchSubzones() {
-                    if (!this.settings.from_zone_id || !this.settings.user_id || !this.settings.token) return;
+                    if (!this.settings.from_zone_id || !this.settings.provider_id || !this.settings.token) return;
 
                     this.loading.subzones = true;
                     try {
                         const url = this.buildApiUrl(
-                            `/api/setting/zones/${this.settings.from_zone_id}?user_id=${this.settings.user_id}&token=${encodeURIComponent(this.settings.token)}`
+                            `/api/setting/zones/${this.settings.from_zone_id}?provider_id=${this.settings.provider_id}&token=${encodeURIComponent(this.settings.token)}`
                         );
                         const r = await fetch(url);
                         if (r.ok) {
@@ -563,7 +563,7 @@
                     this.apiData.zones = [];
                     this.apiData.subzones = [];
                     this.credentialsValidated = false;
-                    if (this.settings.user_id && this.settings.token) {
+                    if (this.settings.provider_id && this.settings.token) {
                         this.loadDependentData();
                     }
                 },
@@ -599,7 +599,7 @@
                                 'Accept': 'application/json'
                             },
                             body: JSON.stringify({
-                                user_id: this.settings.user_id,
+                                provider_id: this.settings.provider_id,
                                 token: this.settings.token
                             })
                         });
@@ -617,7 +617,7 @@
                                 'Accept': 'application/json'
                             },
                             body: JSON.stringify({
-                                user_id: this.settings.user_id,
+                                provider_id: this.settings.provider_id,
                                 token: this.settings.token
                             })
                         });
