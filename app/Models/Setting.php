@@ -20,7 +20,7 @@ class Setting extends Model
 
     function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'provider_id');
     }
 
     function scopeForCurrentShop($query, $merchant)

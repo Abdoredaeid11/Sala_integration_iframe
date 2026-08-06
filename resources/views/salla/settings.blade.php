@@ -84,7 +84,7 @@
                             Service</label>
                         <div class="relative">
                             <select id="service" x-model="settings.service_id" @change="onServiceChange()"
-                                :disabled="!settings.user_id || !settings.token || loading.services"
+                                :disabled="!settings.provider_id || !settings.token || loading.services"
                                 class="block w-full pl-4 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md shadow-sm disabled:bg-gray-100 disabled:cursor-not-allowed">
                                 <option value="" x-text="loading.services ? 'Loading services...' : 'Select a Service'">
                                 </option>
