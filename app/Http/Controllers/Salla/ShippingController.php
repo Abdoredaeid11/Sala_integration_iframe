@@ -550,7 +550,7 @@ class ShippingController extends Controller
         info(json_encode($country));
 
         $mappedZone = Province::where('country_id', $country->id)
-            ->where('external_id', $order['shipping']['city_id'])->first()?->id;
+            ->where('external_id', $order['salla_shipment']['ship_to']['region']['code'])->first()?->id;
 
         $zone = MappedZone::where('mapped_zone_id', $mappedZone)->where('user_id', $this->setting->provider_id)->first();
 
