@@ -10,19 +10,37 @@ use App\Http\Controllers\Salla\ShippingController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
+
 
 // Salla Auth OAuth routes
 Route::get('/{provider}/oauth/redirect', [SessionController::class, 'redirect'])->name('oauth.redirect');
 Route::get('/{provider}/oauth/callback', [SessionController::class, 'callback'])->name('oauth.callback');
 
-Route::middleware('salla.auth',)
-    ->get('/', function () {
-        return view('layouts.salla');
-    })->name('home');
 
-Route::get('/{provider_id}/iframe', function ($provider_id) {
-    return view('layouts.salla', ['provider_id' => $provider_id]);
-})->where('provider_id', '[0-9]+');
+
+Route::get(
+    '/{provider}',
+    [SessionController::class, 'embedded']
+)->where('provider', '[0-9]+')
+ ->name('home');
+
+Route::get('/{provider_id}/iframe', function ($provider_id, Request $request) {
+
+    $token = $request->token;
+
+    $payload = explode('.', $token)[2];
+
+    $decoded = base64_decode(
+        strtr($payload, '-_', '+/')
+    );
+
+    Log::info('DECODED', [
+        'decoded' => $decoded
+    ]);
+
+    return 'ok';
+});
 // API routes with proper session handling
 Route::middleware(['salla.auth',])->prefix('api')->name('api.')->group(function () {
     // Settings API Routes
