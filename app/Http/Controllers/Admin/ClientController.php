@@ -51,7 +51,6 @@ class ClientController extends Controller
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('users', 'client_id')->ignore($client->id, 'id'),
             ],
             'client_secret'             => 'required|string|max:255',
             'webhook_secret'            => 'required|string|max:255',

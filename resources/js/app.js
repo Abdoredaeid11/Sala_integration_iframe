@@ -1,32 +1,64 @@
-/**
- * First we will load all of this project's JavaScript dependencies which
- * includes Vue and other libraries. It is a great starting point when
- * building robust, powerful web applications using Vue and Laravel.
- */
+import { embedded } from '@salla.sa/embedded-sdk';
 
 require('./bootstrap');
 
 window.Vue = require('vue').default;
 
-/**
- * The following block of code may be used to automatically register your
- * Vue components. It will recursively scan this directory for the Vue
- * components and automatically register them with their "basename".
- *
- * Eg. ./components/ExampleComponent.vue -> <example-component></example-component>
- */
+Vue.component(
+    'example-component',
+    require('./components/ExampleComponent.vue').default
+);
 
-// const files = require.context('./', true, /\.vue$/i)
-// files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
+async function initSalla() {
+    try {
+        await embedded.init();
 
-Vue.component('example-component', require('./components/ExampleComponent.vue').default);
+        console.log('Salla SDK initialized');
 
-/**
- * Next, we will create a fresh Vue application instance and attach it to
- * the page. Then, you may begin adding components to this application
- * or customize the JavaScript scaffolding to fit your unique needs.
- */
+        const token = embedded.auth.getToken();
 
-const app = new Vue({
+        console.log('Salla token:', token);
+
+        if (!token) {
+            throw new Error('Salla token not found');
+        }
+
+        // Verify Salla Embedded Token
+        const introspect = await embedded.auth.introspect({
+            token: token,
+            refreshOnError: true
+        });
+
+        console.log('Salla introspect:', introspect);
+
+        if (!introspect.isVerified || !introspect.data) {
+            throw new Error('Invalid Salla embedded token');
+        }
+
+        console.log('Merchant ID:', introspect.data.merchant_id);
+
+        // Send verified merchant information to Laravel
+        const response = await axios.post('/api/salla/auth', {
+            merchant_id: introspect.data.merchant_id
+        });
+
+        console.log('Salla authentication:', response.data);
+
+        embedded.ready();
+
+        console.log('Salla App Ready');
+
+    } catch (error) {
+        console.error('Salla SDK Error:', error);
+
+        if (error.response) {
+            console.error('Laravel Error:', error.response.data);
+        }
+    }
+}
+
+initSalla();
+
+new Vue({
     el: '#app',
 });

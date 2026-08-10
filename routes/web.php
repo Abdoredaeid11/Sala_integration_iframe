@@ -9,6 +9,7 @@ use App\Http\Controllers\Salla\SettingController;
 use App\Http\Controllers\Salla\ShippingController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Log;
 
 // Salla Auth OAuth routes
 Route::get('/{provider}/oauth/redirect', [SessionController::class, 'redirect'])->name('oauth.redirect');
@@ -19,7 +20,9 @@ Route::middleware('salla.auth',)
         return view('layouts.salla');
     })->name('home');
 
-
+Route::get('/{provider_id}/iframe', function ($provider_id) {
+    return view('layouts.salla', ['provider_id' => $provider_id]);
+})->where('provider_id', '[0-9]+');
 // API routes with proper session handling
 Route::middleware(['salla.auth',])->prefix('api')->name('api.')->group(function () {
     // Settings API Routes
