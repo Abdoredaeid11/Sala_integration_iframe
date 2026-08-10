@@ -8,6 +8,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class ClientController extends Controller
 {
@@ -45,7 +46,12 @@ class ClientController extends Controller
             'password'                  => $clientId ? 'nullable|string|min:6|confirmed' : 'required|string|min:6|confirmed',
             'password_confirmation'     => $clientId ? 'nullable|string|min:6' : 'required|string|min:6',
             'country_id'                => 'required|integer|exists:countries,id',
-            'client_id'                 => 'required|string|max:255|unique:users,client_id,' . $client->id,
+
+            'client_id' => [
+                'required',
+                'string',
+                'max:255',
+            ],
             'client_secret'             => 'required|string|max:255',
             'webhook_secret'            => 'required|string|max:255',
         ]);

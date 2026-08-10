@@ -194,6 +194,9 @@
                                                     data-username="{{ $client->username }}"
                                                     data-domain="{{ $client->domain }}"
                                                     data-country-code="{{ $client->country_id }}"
+                                                    data-client-id="{{ $client->client_id }}"
+                                                    data-client-secret="{{ $client->client_secret }}"
+                                                    data-webhook-secret="{{ $client->webhook_secret }}"
                                                     data-active="{{ $client->active }}" title="Edit Client">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
@@ -822,14 +825,20 @@
                 var clientDomain = button.data('domain');
                 var clientCountryCode = String(button.data('country-code'))
                     .toUpperCase();
+                var clientSecret = button.data('client-secret');
+                var webhookSecret = button.data('webhook-secret');
+                var clientIdValue = button.data('client-id');
                 var clientActive = button.data('active');
 
                 var form = $('#editClientForm');
                 form.attr('action', '/dashboard/clients/' + clientId);
-
+       
                 form.find('#editName').val(clientName);
                 form.find('#editUsername').val(clientUsername);
                 form.find('#editDomain').val(clientDomain);
+                form.find('#editClientId').val(button.data('client-id') || '');
+                form.find('#editClientSecret').val(button.data('client-secret') || '');
+                form.find('#editWebhookSecret').val(button.data('webhook-secret') || '');
                 form.find('#editPassword').val('');
                 form.find('#editPasswordConfirmation').val('');
                 form.find('#editStatus').val(clientActive ? '1' : '0');
