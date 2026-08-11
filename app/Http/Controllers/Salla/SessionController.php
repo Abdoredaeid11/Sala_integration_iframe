@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 class SessionController extends Controller
 {
@@ -49,6 +50,8 @@ class SessionController extends Controller
 
     public function callback(Request $request, $provider)
     {
+
+
         if ($request->filled('error')) {
             return redirect()
                 ->route('home', ['provider' => $provider])
@@ -93,6 +96,8 @@ class SessionController extends Controller
             abort(401, 'Unable to obtain Salla access token.');
         }
 
+
+
         $user = $this->service->getResourceOwner($token);
 
         $merchantId = $user->getStoreId();
@@ -100,6 +105,12 @@ class SessionController extends Controller
         if (!$merchantId) {
             abort(401, 'Unable to identify Salla merchant.');
         }
+        Log::info('[Salla OAuth] Saving session', [
+            'merchant_id' => $merchantId,
+            'access_token_length' => strlen($token->getToken()),
+            'refresh_token_length' => strlen($token->getRefreshToken() ?? ''),
+            'expires' => $token->getExpires(),
+        ]);
 
         $session = Session::firstOrNew([
             'merchant' => $merchantId,
@@ -149,151 +160,109 @@ class SessionController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function embedded(Request $request, $provider)
-    {
-        $shippingProvider = User::findOrFail($provider);
 
-        if (!$shippingProvider->active) {
-            abort(403);
-        }
-
-        return view('layouts.salla', [
-            'provider_id' => $provider,
-        ]);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Embedded Authentication
-    |--------------------------------------------------------------------------
-    */
 
     public function embedded(Request $request, $provider)
     {
-        $request->validate([
-            'token' => ['required', 'string'],
+        Log::info('[Salla Embedded] START', [
+            'provider' => $provider,
+            'query' => $request->all(),
         ]);
 
         try {
+            $request->validate([
+                'token' => ['required', 'string'],
+            ]);
+
+            Log::info('[Salla Embedded] Token validation passed');
+
+            $shippingProvider = User::findOrFail($provider);
+
+            Log::info('[Salla Embedded] Provider found', [
+                'provider_id' => $shippingProvider->id,
+                'active' => $shippingProvider->active,
+            ]);
+
+            if (!$shippingProvider->active) {
+                abort(403, 'Provider is inactive.');
+            }
+            $appId = $request->input('app_id');
+
             $token = $request->input('token');
 
-            /*
-         * Extract merchant_id from Salla embedded token.
-         *
-         * Token format:
-         * v4.public.BASE64_PAYLOAD_SIGNATURE
-         */
-            $parts = explode('.', $token);
+            Log::info('[Salla Embedded] Calling introspect');
 
-            if (count($parts) !== 3) {
-                abort(401, 'Invalid Salla embedded token.');
-            }
-
-            $payload = $parts[2];
-
-            // Remove signature from the payload.
-            // The payload contains JSON followed by the signature.
-            $decoded = base64_decode(
-                strtr($payload, '-_', '+/')
+            $response = Http::withHeaders([
+                'S-Source' => $appId,
+                'Accept'   => 'application/json',
+            ])->post(
+                'https://api.salla.dev/exchange-authority/v1/introspect',
+                [
+                    'env'     => 'prod',
+                    'token'   => $token,
+                    'iss'     => 'merchant-dashboard',
+                    'subject' => 'embedded-page',
+                ]
             );
 
-            if (!$decoded) {
-                abort(401, 'Unable to decode Salla token.');
+            Log::info('[Salla Embedded] Introspect response', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
+
+            $data = $response->json();
+
+            Log::info('[Salla Embedded] Parsed response', [
+                'data' => $data,
+            ]);
+
+            if (!$response->successful()) {
+                Log::error('[Salla Embedded] Introspect HTTP failed');
+                abort(401, 'Unable to verify embedded token.');
             }
 
-            /*
-         * Find the JSON payload.
-         *
-         * The payload starts with:
-         * {"data":{"merchant_id":...}}
-         *
-         * We can decode the JSON portion before the signature.
-         */
-            $jsonEnd = strpos($decoded, '}');
+            if (!($data['success'] ?? false)) {
+                Log::error('[Salla Embedded] success=false', [
+                    'response' => $data,
+                ]);
 
-            if ($jsonEnd === false) {
-                abort(401, 'Invalid Salla token payload.');
-            }
-
-            /*
-         * Since there are nested objects, find the JSON
-         * by decoding progressively.
-         */
-            $data = null;
-
-            for ($i = strlen($decoded); $i > 0; $i--) {
-                $possibleJson = substr($decoded, 0, $i);
-
-                $decodedData = json_decode($possibleJson, true);
-
-                if (json_last_error() === JSON_ERROR_NONE) {
-                    $data = $decodedData;
-                    break;
-                }
+                abort(401, 'Embedded token verification failed.');
             }
 
             $merchantId = data_get($data, 'data.merchant_id');
-            $userId = data_get($data, 'data.user_id');
+
+            Log::info('[Salla Embedded] Merchant extracted', [
+                'merchant_id' => $merchantId,
+            ]);
 
             if (!$merchantId) {
-                Log::error('[Salla Embedded] Merchant ID not found', [
-                    'provider_id' => $provider,
-                    'token_length' => strlen($token),
-                ]);
-
                 abort(401, 'Merchant ID not found.');
             }
 
-            Log::info('[Salla Embedded] Token data extracted', [
-                'merchant_id' => $merchantId,
-                'user_id' => $userId,
-                'provider_id' => $provider,
-            ]);
-
-            /*
-         * Find the OAuth session for this
-         * merchant + shipping provider.
-         */
             $session = Session::where('merchant', $merchantId)
                 ->where('provider_id', $provider)
                 ->latest('id')
                 ->first();
 
-            if (!$session) {
-                Log::warning('[Salla Embedded] Session not found', [
-                    'merchant_id' => $merchantId,
-                    'provider_id' => $provider,
-                ]);
+            Log::info('[Salla Embedded] Session lookup', [
+                'found' => (bool) $session,
+            ]);
 
-                abort(
-                    403,
-                    'Salla merchant is not installed for this provider.'
-                );
+            if (!$session) {
+                abort(403, 'Session not found.');
             }
 
-            /*
-         * Check OAuth access token.
-         */
             if (
                 $session->expires_at &&
                 $session->expires_at->isPast()
             ) {
-                Log::warning('[Salla Embedded] OAuth session expired', [
+                Log::warning('[Salla Embedded] Session expired', [
                     'session_id' => $session->id,
-                    'merchant_id' => $merchantId,
-                    'provider_id' => $provider,
                 ]);
 
                 abort(403, 'OAuth session expired.');
             }
 
-            if (empty($session->access_token)) {
-                abort(403, 'Salla access token is missing.');
-            }
-
-            /*
-         * Create our own application cookie.
-         */
             Cookie::queue(
                 'salla_session',
                 encrypt($session->id),
@@ -306,33 +275,26 @@ class SessionController extends Controller
                 'none'
             );
 
-            Log::info('[Salla Embedded] Authentication successful', [
+            Log::info('[Salla Embedded] SUCCESS', [
                 'session_id' => $session->id,
                 'merchant_id' => $merchantId,
-                'provider_id' => $provider,
-                'access_token_length' => strlen($session->access_token),
             ]);
 
-            /*
-         * IMPORTANT:
-         * Return the application Home directly.
-         *
-         * No /iframe route.
-         * No second request.
-         */
             return view('layouts.salla', [
                 'merchant_id' => $merchantId,
                 'provider_id' => $provider,
             ]);
         } catch (\Throwable $e) {
 
-            Log::error('[Salla Embedded] Authentication failed', [
+            Log::error('[Salla Embedded] EXCEPTION', [
+                'class'   => get_class($e),
                 'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+                'trace'   => $e->getTraceAsString(),
             ]);
 
-            abort(500, 'Authentication failed.');
+            throw $e;
         }
     }
 }
