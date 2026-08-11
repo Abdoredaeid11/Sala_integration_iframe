@@ -5,6 +5,17 @@
     <meta charset="UTF-8">
     <title>Accurate Logistics</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="module">
+        import {
+            embedded
+        } from "https://cdn.jsdelivr.net/npm/@salla.sa/embedded-sdk/+esm";
+        window.sallaEmbedded = embedded;
+
+        (async () => {
+            await embedded.init();
+        })();
+    </script>
+
     <script src="https://unpkg.com/alpinejs@3.13.10/dist/cdn.min.js" defer></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
@@ -338,6 +349,9 @@
                     await this.fetchOrders({}, false);
 
                     this.pageLoading = false;
+                    if (window.sallaEmbedded) {
+                        await window.sallaEmbedded.ready();
+                    }
                 },
 
                 async switchTab(newTab) {

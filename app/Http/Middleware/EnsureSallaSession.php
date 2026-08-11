@@ -33,7 +33,7 @@ class EnsureSallaSession
         | 1. Try normal Laravel session cookie first
         |--------------------------------------------------------------------------
         */
-        $session = $this->getSessionFromIframeToken($request);
+        $session = $this->getSessionFromCookie($request);
         Log::info('[EnsureSallaSession] After cookie attempt', [
             'session_found_from_cookie' => !is_null($session),
             'session_id' => $session?->id,
@@ -195,14 +195,19 @@ class EnsureSallaSession
                 'token_prefix' => substr($token, 0, 10),
             ]);
 
-            $response = Http::withToken($token)
-                ->withHeaders([
-                    'S-Source' => $sSource,
-                    'Accept'   => 'application/json',
-                ])
-                ->post(
-                    'https://api.salla.dev/exchange-authority/v1/introspect'
-                );
+            $response = Http::withHeaders([
+                'S-Source' => $sSource,
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ])->post(
+                'https://api.salla.dev/exchange-authority/v1/introspect',
+                [
+                    'env'     => 'prod',
+                    'token'   => $token,
+                    'iss'     => 'merchant-dashboard',
+                    'subject' => 'embedded-page',
+                ]
+            );
 
             Log::info('[Salla] Token introspection response', [
                 'status' => $response->status(),
